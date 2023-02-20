@@ -101,16 +101,26 @@ impl iced::widget::text_input::StyleSheet for InputStyle {
     type Style = iced::Theme;
     fn active(&self, _: &Self::Style) -> iced_style::text_input::Appearance {
         text_input::Appearance {
-            border_color: Color::from_rgba(0.3, 0.3, 0.3, 1.0),
-            background: Background::Color(Color::from_rgba(0.0, 0.0, 0.0, 1.0)),
+            border_color: Color::from_rgba(0.3, 0.3, 0.3, 0.0),
+            background: Background::Color(Color::from_rgba(
+                12.0 / 255.0,
+                12.0 / 255.0,
+                12.0 / 255.0,
+                1.0,
+            )),
             border_radius: 0.0,
             border_width: 1.0,
         }
     }
     fn focused(&self, _: &Self::Style) -> iced_style::text_input::Appearance {
         text_input::Appearance {
-            border_color: Color::from_rgba(0.3, 0.3, 0.3, 1.0),
-            background: Background::Color(Color::from_rgba(0.0, 0.0, 0.0, 1.0)),
+            border_color: Color::from_rgba(0.3, 0.3, 0.3, 0.0),
+            background: Background::Color(Color::from_rgba(
+                12.0 / 255.0,
+                12.0 / 255.0,
+                12.0 / 255.0,
+                1.0,
+            )),
             border_radius: 0.0,
             border_width: 1.0,
         }
