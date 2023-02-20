@@ -543,7 +543,7 @@ where
                 {
                     let mut editor = Editor::new(value, &mut state.cursor);
 
-                    if c == '`' {
+                    if c == '\\' && !state.locked {
                         state.locked = true;
                     } else {
                         editor.insert(c, state.locked);

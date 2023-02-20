@@ -117,7 +117,7 @@ impl<'a> Editor<'a> {
             self.value.remove_many(left, right);
         }
 
-        if locked && character != '`' {
+        if locked && character != '\\' {
             self.value
                 .insert(self.cursor.end(self.value), KS[&character]);
         } else {
