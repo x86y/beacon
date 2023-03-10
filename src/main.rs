@@ -70,9 +70,22 @@ enum Beacon {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+enum Ty {
+    Array,
+    Number,
+    Character,
+    Function,
+    Mod1,
+    Mod2,
+    Namespace,
+    Err,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct EvalCell {
     src: String,
     res: String,
+    ty: Ty,
     time: Duration,
 }
 
@@ -243,6 +256,12 @@ impl Application for Beacon {
                             state.tab_at = 0;
                             return Command::none();
                         }
+                        if state.input_value == "clean" {
+                            if let Some(a) = state.eval_cells.0.get_mut(&state.tab_at) {
+                                a.retain(|v| !matches!(v.ty, Ty::Err));
+                            }
+                            return Command::none();
+                        }
                         if state.input_value == "close" {
                             return Command::perform(async { Message::TabClose }, |_| {
                                 Message::TabClose
@@ -265,6 +284,21 @@ impl Application for Beacon {
                             .push(EvalCell {
                                 res: truncate(format!("{bqnv:?}").as_str(), 500).to_string(),
                                 src: state.input_value.clone(),
+                                ty: {
+                                    if format!("{bqnv:?}").as_str().contains("Error") {
+                                        Ty::Err
+                                    } else {
+                                        match bqnv.bqn_type() {
+                                            cbqn::BQNType::Array => Ty::Array,
+                                            cbqn::BQNType::Number => Ty::Number,
+                                            cbqn::BQNType::Character => Ty::Character,
+                                            cbqn::BQNType::Function => Ty::Function,
+                                            cbqn::BQNType::Mod1 => Ty::Mod1,
+                                            cbqn::BQNType::Mod2 => Ty::Mod2,
+                                            cbqn::BQNType::Namespace => Ty::Namespace,
+                                        }
+                                    }
+                                },
                                 time: elapsed,
                             });
                         scrollable::snap_to(
@@ -338,7 +372,7 @@ impl Application for Beacon {
                         .map(|txt| {
                             let mut res = txt.res.to_string();
                             let mut did_error = false;
-                            if res.contains("Error") {
+                            if let Ty::Err = txt.ty {
                                 res = res.replace('\"', "");
                                 did_error = true;
                             }
