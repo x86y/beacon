@@ -1,9 +1,7 @@
 use crate::text_input;
-use iced::{
-    widget::{button, container},
-    Color,
-};
-use iced::{Background, Vector};
+use iced::widget::{button, container};
+use iced::Background;
+use iced::Color;
 
 pub struct BtnStyle;
 pub struct TabStyle;
@@ -14,6 +12,7 @@ pub struct ElapsedTimeStyle;
 pub struct ErroredCellStyle;
 pub struct ActiveTabStyle;
 pub struct InputStyle;
+pub struct TooltipStyle;
 
 impl iced::widget::button::StyleSheet for BtnStyle {
     type Style = iced::Theme;
@@ -97,9 +96,12 @@ impl SrcCellStyle {
     }
 }
 
-impl iced::widget::text_input::StyleSheet for InputStyle {
+impl text_input::StyleSheet for InputStyle {
     type Style = iced::Theme;
-    fn active(&self, _: &Self::Style) -> iced_style::text_input::Appearance {
+    fn disabled_color(&self, style: &Self::Style) -> Color {
+        Color::BLACK
+    }
+    fn disabled(&self, style: &Self::Style) -> iced_style::text_input::Appearance {
         text_input::Appearance {
             border_color: Color::from_rgba(0.3, 0.3, 0.3, 0.0),
             background: Background::Color(Color::from_rgba(
@@ -108,8 +110,23 @@ impl iced::widget::text_input::StyleSheet for InputStyle {
                 12.0 / 255.0,
                 1.0,
             )),
-            border_radius: 0.0,
+            border_radius: 0.0.into(),
             border_width: 1.0,
+            icon_color: Color::BLACK,
+        }
+    }
+    fn active(&self, _: &Self::Style) -> text_input::Appearance {
+        text_input::Appearance {
+            border_color: Color::from_rgba(0.3, 0.3, 0.3, 0.0),
+            background: Background::Color(Color::from_rgba(
+                12.0 / 255.0,
+                12.0 / 255.0,
+                12.0 / 255.0,
+                1.0,
+            )),
+            border_radius: 0.0.into(),
+            border_width: 1.0,
+            icon_color: Color::BLACK,
         }
     }
     fn focused(&self, _: &Self::Style) -> iced_style::text_input::Appearance {
@@ -121,8 +138,9 @@ impl iced::widget::text_input::StyleSheet for InputStyle {
                 12.0 / 255.0,
                 1.0,
             )),
-            border_radius: 0.0,
+            border_radius: 0.0.into(),
             border_width: 1.0,
+            icon_color: Color::BLACK,
         }
     }
     fn placeholder_color(&self, _: &Self::Style) -> Color {
@@ -154,5 +172,25 @@ impl ElapsedTimeStyle {
 impl ErroredCellStyle {
     pub fn theme() -> iced::theme::Text {
         iced::theme::Text::Color(Color::from_rgba(1.0, 0.0, 0.1, 0.95))
+    }
+}
+
+impl iced::widget::container::StyleSheet for TooltipStyle {
+    type Style = iced::Theme;
+    fn appearance(&self, _: &Self::Style) -> container::Appearance {
+        container::Appearance {
+            background: Some(Background::Color(Color::from_rgb(
+                24.0 / 255.0,
+                24.0 / 255.0,
+                24.0 / 255.0,
+            ))),
+            text_color: Some(Color::WHITE),
+            ..Default::default()
+        }
+    }
+}
+impl TooltipStyle {
+    pub fn theme() -> iced::theme::Container {
+        iced::theme::Container::Custom(Box::from(TooltipStyle))
     }
 }

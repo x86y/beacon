@@ -11,12 +11,19 @@ A native and a cross platform guide for BQN array programming language.
 - Glyph toolbar (hover documentation missing for now)
 - Tabs (Ctrl + n,p to go to next/prev tab & Ctrl + t,q to open/close a tab)
 - History & tabs persistence
-- Cross-platform (installation not yet streamlined for Windows though)
+- Cross-platform
 
 
-## Instructions
+## Linux/MacOS instructions
 ```sh
 > git clone https://github.com/x86y/beacon
 > cd beacon
 > cargo run --release
+```
+
+## Windows instructions
+```sh
+> git clone https://github.com/x86y/beacon
+> cd beacon
+> BQN_WASM=./BQN.wasm cargo run --release --no-default-features --features=bqnwasm
 ```

@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
 
-use iced_native::{
+use iced_core::{
     event,
     layout::{Limits, Node},
     mouse,
@@ -25,9 +25,9 @@ pub struct Wrap<'a, Message, Renderer, Direction> {
     /// The height of the [`Wrap`](Wrap).
     pub height: Length,
     /// The maximum width of the [`Wrap`](Wrap).
-    pub max_width: u32,
+    pub max_width: f32,
     /// The maximum height of the [`Wrap`](Wrap)
-    pub max_height: u32,
+    pub max_height: f32,
     /// The padding of each element of the [`Wrap`](Wrap).
     pub padding: u16,
     /// The spacing between each element of the [`Wrap`](Wrap).
@@ -50,7 +50,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Horizontal> {
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
-    ///     * the vector containing the [`Element`](iced_native::Element)s for this [`Wrap`](Wrap).
+    ///     * the vector containing the [`Element`](iced_core::Element)s for this [`Wrap`](Wrap).
     #[must_use]
     pub fn with_elements(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
@@ -70,7 +70,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Vertical> {
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
-    ///     * the vector containing the [`Element`](iced_native::Element)s for this [`Wrap`](Wrap).
+    ///     * the vector containing the [`Element`](iced_core::Element)s for this [`Wrap`](Wrap).
     #[must_use]
     pub fn with_elements_vertical(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
@@ -125,14 +125,14 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
 
     /// Sets the maximum width of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn max_width(mut self, max_width: u32) -> Self {
+    pub const fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = max_width;
         self
     }
 
     /// Sets the maximum height of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn max_height(mut self, max_height: u32) -> Self {
+    pub const fn max_height(mut self, max_height: f32) -> Self {
         self.max_height = max_height;
         self
     }
@@ -144,7 +144,7 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
         self
     }
 
-    /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
+    /// Pushes an [`Element`](iced_core::Element) to the [`Wrap`](Wrap).
     #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
@@ -159,7 +159,7 @@ impl<'a, Message, Renderer, Direction> Widget<Message, Renderer>
     for Wrap<'a, Message, Renderer, Direction>
 where
     Self: WrapLayout<Renderer>,
-    Renderer: iced_native::Renderer,
+    Renderer: iced_core::Renderer,
 {
     fn children(&self) -> Vec<Tree> {
         self.elements.iter().map(Tree::new).collect()
@@ -186,7 +186,7 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor_position: iced::mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
@@ -214,7 +214,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<iced_core::overlay::Element<'b, Message, Renderer>> {
         self.elements
             .iter_mut()
             .zip(&mut state.children)
@@ -228,7 +228,7 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor_position: iced::mouse::Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -254,9 +254,9 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &iced_core::renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor_position: iced::mouse::Cursor,
         viewport: &Rectangle,
     ) {
         for ((child, state), layout) in self
@@ -281,7 +281,7 @@ where
 impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Vertical>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_core::Renderer,
     Message: 'a,
 {
     fn from(
@@ -294,7 +294,7 @@ where
 impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Horizontal>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_core::Renderer,
     Message: 'a,
 {
     fn from(
@@ -311,8 +311,8 @@ impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, D
             alignment: Alignment::Start,
             width: Length::Shrink,
             height: Length::Shrink,
-            max_width: u32::MAX,
-            max_height: u32::MAX,
+            max_width: f32::MAX,
+            max_height: f32::MAX,
             padding: 0,
             spacing: 0,
             line_spacing: 0,
@@ -324,7 +324,7 @@ impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, D
 /// A inner layout of the [`Wrap`](Wrap).
 pub trait WrapLayout<Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: iced_core::Renderer,
 {
     /// A inner layout of the [`Wrap`](Wrap).
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node;
@@ -333,7 +333,7 @@ where
 impl<'a, Message, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, Renderer, direction::Horizontal>
 where
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: iced_core::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
@@ -415,7 +415,7 @@ where
 impl<'a, Message, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, Renderer, direction::Vertical>
 where
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: iced_core::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
