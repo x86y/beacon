@@ -27,7 +27,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: target/release/beacon.exe
+          files: target/release/beacon_windows.exe
 
   linux:
     runs-on: ubuntu-latest
@@ -50,12 +50,14 @@ jobs:
           FFI=0 make shared-o3
           mv libcbqn.so ../
       - name: Build
-        run: RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.so" cargo build --release
+        run: |
+          RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.so" cargo build --release
+          mv target/release/beacon ./beacon_linux
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: target/release/beacon
+          files: ./beacon_linux
 
   macos:
     runs-on: macos-11
@@ -73,13 +75,15 @@ jobs:
       - name: Install ARM target
         run: |
           rustup update && rustup target add aarch64-apple-darwin
-          cargo install cargo-bundle
+          cargo install cargo-bundle || echo "already installed"
       - name: Build ARM
         run: RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.dylib" cargo bundle --release --target=aarch64-apple-darwin
       - name: Rename
-        run: mv target/aarch64-apple-darwin/release/bundle/osx/Beacon.app .
+        run: |
+          mv target/aarch64-apple-darwin/release/bundle/osx/Beacon.app ./Beacon_macos.app
+          ls .
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: Beacon.app
+          files: ./Beacon_macos.app
