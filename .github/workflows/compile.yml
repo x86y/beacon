@@ -23,8 +23,6 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Sanity
-        run: ls D:/a/beacon/beacon
       - name: Build
         run: BQN_WASM="D:/a/beacon/beacon/BQN.wasm" cargo build --release --no-default-features --features=bqnwasm
       - name: Release
@@ -32,8 +30,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            README.md
-            LICENSE
             target/release/beacon.exe
   # macos:
   #   runs-on: macos-11
