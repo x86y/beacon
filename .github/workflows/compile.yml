@@ -1,7 +1,5 @@
 name: Release
-
 on: [push, pull_request]
-
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   CARGO_TERM_COLOR: always
@@ -29,52 +27,47 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            target/release/beacon.exe
-  # macos:
-  #   runs-on: macos-11
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Install dependencies
-  #       run: brew install scdoc
-  #     - name: Install ARM target
-  #       run: rustup update && rustup target add aarch64-apple-darwin
-  #     - name: Test
-  #       run: cargo test --release
-  #     - name: Build ARM
-  #       run: cargo build --release --target=aarch64-apple-darwin
-  #     - name: Make DMG
-  #       run: make dmg-universal
-  #     - name: Upload Application
-  #       run: |
-  #         mv ./target/release/osx/Alacritty.dmg ./Alacritty-${GITHUB_REF##*/}.dmg
-  #         ./.github/workflows/upload_asset.sh ./Alacritty-${GITHUB_REF##*/}.dmg $GITHUB_TOKEN
-  # linux:
-  #   runs-on: ubuntu-latest
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Install dependencies
-  #       run: |
-  #         sudo apt-get install cmake pkg-config libfreetype6-dev libfontconfig1-dev \
-  #           libxcb-xfixes0-dev libxkbcommon-dev python3 scdoc
-  #     - name: Test
-  #       run: cargo test --release
-  #     - name: Generate manpages
-  #       run: |
-  #         scdoc < extra/man/alacritty.1.scd | gzip -c > "./alacritty.1.gz"
-  #         scdoc < extra/man/alacritty-msg.1.scd | gzip -c > "./alacritty-msg.1.gz"
-  #         scdoc < extra/man/alacritty.5.scd | gzip -c > "./alacritty.5.gz"
-  #         scdoc < extra/man/alacritty-bindings.5.scd | gzip -c > "./alacritty-bindings.5.gz"
-  #     - name: Upload Assets
-  #       run: |
-  #         mv ./extra/logo/alacritty-term.svg ./Alacritty.svg
-  #         ./.github/workflows/upload_asset.sh ./Alacritty.svg $GITHUB_TOKEN
-  #         ./.github/workflows/upload_asset.sh ./alacritty.1.gz $GITHUB_TOKEN
-  #         ./.github/workflows/upload_asset.sh ./alacritty-msg.1.gz $GITHUB_TOKEN
-  #         ./.github/workflows/upload_asset.sh ./extra/completions/alacritty.bash $GITHUB_TOKEN
-  #         ./.github/workflows/upload_asset.sh ./extra/completions/alacritty.fish $GITHUB_TOKEN
-  #         ./.github/workflows/upload_asset.sh ./extra/completions/_alacritty $GITHUB_TOKEN
-  #         ./.github/workflows/upload_asset.sh ./extra/linux/Alacritty.desktop $GITHUB_TOKEN
-  #         ./.github/workflows/upload_asset.sh ./extra/alacritty.info $GITHUB_TOKEN
+          files: target/release/beacon.exe
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build
+        run: cargo build --release
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: target/release/beacon
+  macos:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install ARM target
+        run: rustup update && rustup target add aarch64-apple-darwin
+      - name: Build ARM
+        run: RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.dylib" cargo build --release --target=aarch64-apple-darwin
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: target/release/beacon
