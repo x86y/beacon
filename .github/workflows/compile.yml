@@ -78,8 +78,13 @@ jobs:
           cargo install cargo-bundle || echo "already installed"
       - name: Build ARM
         run: RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.dylib" cargo bundle --release --target=aarch64-apple-darwin
+      - name: Create DMG
+        run: |
+          git clone https://github.com/create-dmg/create-dmg
+          chmod u+x create-dmg/create-dmg
+          ./create-dmg/create-dmg Beacon.dmg target/aarch64-apple-darwin/release/bundle/osx/Beacon.app
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: target/aarch64-apple-darwin/release/bundle/osx/Beacon.app
+          files: Beacon.dmg
