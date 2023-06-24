@@ -1,54 +1,37 @@
-use cbqn::{eval, BQNValue};
+#![allow(dead_code, unused_variables)]
+
+use iced::widget::pane_grid::{self, PaneGrid};
+use iced::widget::responsive;
 use iced::{
     event::{self, Event},
     keyboard::{self, Modifiers},
     subscription,
-    widget::{button, column, container, row, scrollable, text, tooltip, Column, Container},
+    widget::{column, container, scrollable, text},
     window, Application, Command, Element, Length, Settings, Subscription, Theme,
 };
-use iced_core::{text::LineHeight, Font};
 use iced_runtime::font::load;
-use itertools::Itertools;
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::time::Instant;
-use std::{collections::HashMap, time::Duration};
 // use tracing::{event as e, info, instrument, Level};
 
 mod docs;
-#[cfg(feature = "k")]
-mod k;
 mod save;
 mod styles;
+mod utils;
+mod views;
 mod widgets;
 use crate::save::*;
-use crate::styles::*;
+use crate::utils::{EvalCell, Ty};
 use crate::widgets::text_input;
-use crate::widgets::wrap::Wrap;
-use docs::content::glyph_to_documentation;
+#[cfg(feature = "k")]
+use utils::keval;
+use utils::{truncate, HistoryMap, REPL};
+use views::pane::{view_pane, Pane};
+use views::toolbar::toolbar;
 
-static REPL: Lazy<BQNValue> = Lazy::new(|| {
-    eval("(•ReBQN{repl⇐\"loose\"})⎊{𝕊: \"Error: \"∾•CurrentError@}")
-        .expect("Err on repl construction")
-});
-static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
+pub static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
-static GLYPHS: Lazy<[char; 64]> = Lazy::new(|| {
-    [
-        '+', '¨', '⊸', '⊑', '´', '∾', '×', '-', '≠', '∘', '˜', '=', '/', '<', '↕', '⥊', '⊢', '⟜',
-        '⊏', '≡', '∧', '˘', '!', '>', '⌽', '↓', '¬', '↑', '∨', '`', '◶', '⍟', '⌜', '⊣', '⌾', '⌈',
-        '⋈', '⊔', '⌊', '»', '⊐', '∊', '○', '≤', '|', '≢', '⍉', '÷', '≍', '˝', '⁼', '«', '≥', '˙',
-        '⍋', '⍷', '⋆', '⊘', '⎉', '⚇', '⊒', '√', '⍒', '⎊',
-    ]
-});
-macro_rules! bqn386 {
-    ($q:expr) => {
-        text($q)
-            .font(Font::with_name("BQN386 Unicode"))
-            .size(14)
-            .line_height(LineHeight::Absolute(12.into()))
-    };
-}
 
 pub fn main() -> iced::Result {
     tracing_subscriber::fmt::init();
@@ -61,63 +44,54 @@ pub fn main() -> iced::Result {
     })
 }
 
-#[derive(Debug)]
 enum Beacon {
     Loading,
     Loaded(State),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-enum Ty {
-    Array,
-    Number,
-    Character,
-    Function,
-    Mod1,
-    Mod2,
-    Namespace,
-    Err,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct EvalCell {
-    src: String,
-    res: String,
-    ty: Ty,
-    time: Duration,
-}
-
-#[derive(Debug, Default)]
 struct State {
-    input_value: String,
-    eval_cells: History,
+    input_value: HashMap<usize, String>,
+    eval_cells: HistoryMap,
     tab_at: usize,
     dirty: bool,
     saving: bool,
+    panes: pane_grid::State<Pane>,
+    panes_created: usize,
+    focus: Option<pane_grid::Pane>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct History(HashMap<usize, Vec<EvalCell>>);
-impl History {
-    fn min_tab(&self) -> &usize {
-        self.0.keys().min().unwrap_or(&0)
+impl Default for State {
+    fn default() -> Self {
+        let (panes, _) = pane_grid::State::new(Pane::new(0));
+        Self {
+            input_value: HashMap::new(),
+            eval_cells: Default::default(),
+            tab_at: Default::default(),
+            dirty: Default::default(),
+            saving: Default::default(),
+            panes,
+            panes_created: 1,
+            focus: None,
+        }
     }
-    fn max_tab(&self) -> &usize {
-        self.0.keys().max().unwrap_or(&0)
-    }
-    fn new() -> History {
-        let mut h = HashMap::new();
-        h.insert(0, vec![]);
-        History(h)
+}
+
+impl State {
+    fn focused_pane(&self) -> usize {
+        if let Some(f) = self.focus {
+            unsafe { std::mem::transmute::<_, usize>(f) }
+        } else {
+            0
+        }
     }
 }
 
 #[derive(Debug, Clone)]
-enum Message {
+pub enum Message {
     Loaded(Result<SavedState, LoadError>),
     FontLoaded(Result<(), iced_runtime::font::Error>),
     Saved(Result<(), SaveError>),
-    InputChanged(String),
+    InputChanged(String, usize),
     RunInput,
     InputFocus,
     FillInput(String),
@@ -128,6 +102,17 @@ enum Message {
     TabNext,
     TabPrev,
     BufferClear,
+    Split(pane_grid::Axis, pane_grid::Pane),
+    SplitFocused(pane_grid::Axis),
+    FocusAdjacent(pane_grid::Direction),
+    Clicked(pane_grid::Pane),
+    Dragged(pane_grid::DragEvent),
+    Resized(pane_grid::ResizeEvent),
+    TogglePin(pane_grid::Pane),
+    Maximize(pane_grid::Pane),
+    Restore,
+    Close(pane_grid::Pane),
+    CloseFocused,
 }
 
 impl Application for Beacon {
@@ -171,13 +156,17 @@ impl Application for Beacon {
                     Message::Loaded(Ok(state)) => {
                         *self = Beacon::Loaded(State {
                             input_value: state.input_val,
-                            eval_cells: state.history,
+                            eval_cells: {
+                                // let mut h = HashMap::new();
+                                // h.insert(state.at, state.history);
+                                state.history
+                            },
                             ..State::default()
                         });
                     }
                     Message::Loaded(Err(_)) => {
                         *self = Beacon::Loaded(State {
-                            eval_cells: { History::new() },
+                            eval_cells: { HistoryMap::new() },
                             ..State::default()
                         });
                     }
@@ -191,13 +180,102 @@ impl Application for Beacon {
 
                 let max_idx = *state.eval_cells.max_tab();
                 let min_idx = *state.eval_cells.min_tab();
+                let focused_pane = state.focused_pane();
                 let command = match message {
-                    Message::InputChanged(value) => {
-                        state.input_value = value;
+                    Message::Split(axis, pane) => {
+                        let result = state
+                            .panes
+                            .split(axis, &pane, Pane::new(state.panes_created));
+
+                        if let Some((pane, _)) = result {
+                            state.focus = Some(pane);
+                        }
+
+                        state.panes_created += 1;
+                        Command::none()
+                    }
+                    Message::SplitFocused(axis) => {
+                        if let Some(pane) = state.focus {
+                            let result =
+                                state
+                                    .panes
+                                    .split(axis, &pane, Pane::new(state.panes_created));
+
+                            if let Some((pane, _)) = result {
+                                state.focus = Some(pane);
+                            }
+
+                            state.panes_created += 1;
+                        }
+                        Command::none()
+                    }
+                    Message::FocusAdjacent(direction) => {
+                        if let Some(pane) = state.focus {
+                            if let Some(adjacent) = state.panes.adjacent(&pane, direction) {
+                                state.focus = Some(adjacent);
+                            }
+                        }
+                        Command::none()
+                    }
+                    Message::Clicked(pane) => {
+                        state.focus = Some(pane);
+                        Command::none()
+                    }
+                    Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
+                        state.panes.resize(&split, ratio);
+                        Command::none()
+                    }
+                    Message::Dragged(pane_grid::DragEvent::Dropped {
+                        pane,
+                        target,
+                        region,
+                    }) => {
+                        state.panes.split_with(&target, &pane, region);
+                        Command::none()
+                    }
+                    Message::Dragged(_) => Command::none(),
+                    Message::TogglePin(pane) => {
+                        if let Some(Pane { is_pinned, .. }) = state.panes.get_mut(&pane) {
+                            *is_pinned = !*is_pinned;
+                        }
+                        Command::none()
+                    }
+                    Message::Maximize(pane) => {
+                        state.panes.maximize(&pane);
+
+                        Command::none()
+                    }
+                    Message::Restore => {
+                        state.panes.restore();
+                        Command::none()
+                    }
+                    Message::Close(pane) => {
+                        if let Some((_, sibling)) = state.panes.close(&pane) {
+                            state.focus = Some(sibling);
+                        }
+                        Command::none()
+                    }
+                    Message::CloseFocused => {
+                        if let Some(pane) = state.focus {
+                            if let Some(Pane { is_pinned, .. }) = state.panes.get(&pane) {
+                                if !is_pinned {
+                                    if let Some((_, sibling)) = state.panes.close(&pane) {
+                                        state.focus = Some(sibling);
+                                    }
+                                }
+                            }
+                        }
+                        Command::none()
+                    }
+                    Message::InputChanged(value, pane_idx) => {
+                        let i = state.input_value.entry(pane_idx).or_insert(String::new());
+                        let ic = state.input_value.get_mut(&focused_pane).unwrap();
+                        *ic = value;
                         Command::none()
                     }
                     Message::TabCreate => {
-                        state.eval_cells.0.insert(max_idx + 1, vec![]);
+                        let h = HashMap::new();
+                        state.eval_cells.0.insert(max_idx + 1, h);
                         state.tab_at = max_idx + 1;
                         Command::none()
                     }
@@ -234,11 +312,13 @@ impl Application for Beacon {
                         Command::none()
                     }
                     Message::FillInput(o) => {
-                        state.input_value = o;
+                        let i = state.input_value.get_mut(&focused_pane).unwrap();
+                        *i = o;
                         Command::none()
                     }
                     Message::ToolbarClick(c) => {
-                        state.input_value += c.as_str();
+                        let i = state.input_value.get_mut(&focused_pane).unwrap();
+                        *i += c.as_str();
                         Command::none()
                     }
                     Message::Saved(_) => {
@@ -247,7 +327,9 @@ impl Application for Beacon {
                         Command::none()
                     }
                     Message::BufferClear => {
-                        *state.eval_cells.0.get_mut(&state.tab_at).unwrap() = vec![];
+                        if let Some(h) = state.eval_cells.0.get_mut(&state.tab_at) {
+                            h.insert(focused_pane, vec![]);
+                        }
                         Command::none()
                     }
                     Message::InputFocus =>
@@ -258,39 +340,31 @@ impl Application for Beacon {
                         Command::none()
                     }
                     Message::RunInput => {
-                        if state.input_value == "clear" {
-                            state.eval_cells = History::new();
+                        let inp: String = state.input_value[&focused_pane].clone();
+                        if inp == "clear" {
+                            state.eval_cells = HistoryMap::new();
                             state.tab_at = 0;
                             return Command::none();
                         }
-                        if state.input_value == "clean" {
-                            if let Some(a) = state.eval_cells.0.get_mut(&state.tab_at) {
-                                a.retain(|v| !matches!(v.ty, Ty::Err));
-                            }
+                        if inp == "clean" {
+                            // if let Some(a) = state.eval_cells.0.get_mut(&state.tab_at) {
+                            //     a.retain(|v| !matches!(v.ty, Ty::Err));
+                            // }
                             return Command::none();
                         }
-                        if state.input_value == "close" {
+                        if inp == "close" {
                             return Command::perform(async { Message::TabClose }, |_| {
                                 Message::TabClose
                             });
                         }
                         let now = Instant::now();
-                        let bqnc = REPL.call1(&state.input_value.clone().into());
+                        let bqnc = REPL.call1(&inp.clone().into());
                         #[cfg(feature = "k")]
                         println!("{}", k::keval("`0:3+3", vec![]));
                         let elapsed = now.elapsed();
-                        fn truncate(s: &str, max_chars: usize) -> &str {
-                            match s.char_indices().nth(max_chars) {
-                                None => s,
-                                Some((idx, _)) => &s[..idx],
-                            }
-                        }
-                        state
-                            .eval_cells
-                            .0
-                            .get_mut(&state.tab_at)
-                            .unwrap()
-                            .push(EvalCell {
+                        if let Some(h) = state.eval_cells.0.get_mut(&state.tab_at) {
+                            let vec = h.entry(focused_pane).or_insert(vec![]);
+                            vec.push(EvalCell {
                                 res: truncate(
                                     match bqnc {
                                         Ok(b) => format!("{b:?}"),
@@ -300,10 +374,11 @@ impl Application for Beacon {
                                     500,
                                 )
                                 .to_string(),
-                                src: { state.input_value.clone() },
+                                src: inp,
                                 ty: { Ty::Number },
                                 time: elapsed,
                             });
+                        }
                         scrollable::snap_to(
                             SCROLL_ID.clone(),
                             scrollable::RelativeOffset { x: 0.0, y: 1.0 },
@@ -340,117 +415,48 @@ impl Application for Beacon {
 
     fn view(&self) -> Element<Message> {
         match self {
-            Beacon::Loading => bqn386!("loading").into(),
-            Beacon::Loaded(State {
-                input_value,
-                eval_cells: outs,
-                tab_at: at,
-                ..
-            }) => {
-                let inp = text_input::text_input("", input_value)
-                    .padding(15)
-                    .style(InputStyle::theme())
-                    .size(18)
-                    .font(Font::with_name("BQN386 Unicode"))
-                    .on_submit(Message::RunInput)
-                    .on_input(Message::InputChanged)
-                    .id(INPUT_ID.clone());
-                let glyphbar: Container<_> = Container::new(
-                    GLYPHS
-                        .iter()
-                        .fold(Wrap::new(), |wrap, glyph| {
-                            wrap.push(
-                                tooltip(
-                                    button(bqn386!(glyph))
-                                        .style(BtnStyle::theme())
-                                        .on_press(Message::ToolbarClick(glyph.to_string())),
-                                    glyph_to_documentation(*glyph),
-                                    tooltip::Position::FollowCursor,
-                                )
-                                .style(TooltipStyle::theme()),
-                            )
-                        })
-                        .spacing(1),
-                );
-                let out_cells: Column<_> = column(
-                    outs.0[at]
-                        .iter()
-                        .map(|txt| {
-                            let mut res = txt.res.to_string();
-                            let mut did_error = false;
-                            if txt.res.starts_with("CBQN error:") {
-                                res = res.replace("CBQN error: ", "");
-                                did_error = true;
-                            }
-                            let mut v = vec![
-                                button(
-                                    bqn386!(" ".to_string() + &txt.src)
-                                        .style(SrcCellStyle::theme()),
-                                )
-                                .on_press(Message::FillInput(txt.src.to_string()))
-                                .style(BtnStyle::theme())
-                                .into(),
-                                button(bqn386!(res.clone()).style(if did_error {
-                                    ErroredCellStyle::theme()
-                                } else {
-                                    Default::default()
-                                }))
-                                .on_press(Message::FillInput(res))
-                                .style(BtnStyle::theme())
-                                .into(),
-                            ];
-                            v.push(
-                                bqn386!(format!("{}ms", txt.time.as_millis()))
-                                    .size(12)
-                                    .style(ElapsedTimeStyle::theme())
-                                    .into(),
-                            );
-                            Container::new(column(v))
-                                .width(Length::Fill)
-                                .style(CanvasStyle::theme())
-                                .into()
-                        })
-                        .collect::<Vec<Element<_>>>(),
-                )
-                .spacing(8);
-                let tabs: iced::widget::Row<Message> = row({
-                    outs.0
-                        .keys()
-                        .sorted()
-                        .map(|i| {
-                            Container::new(
-                                button(if i == at {
-                                    bqn386!(format!("{i}")).style(ActiveTabStyle::theme())
-                                } else {
-                                    bqn386!(format!("{i}"))
-                                })
-                                .on_press(Message::TabChanged(*i))
-                                .style(TabStyle::theme()),
-                            )
-                            .into()
-                        })
-                        .collect()
-                });
-                let new_tab_btn = button(bqn386!("+"))
-                    .on_press(Message::TabCreate)
-                    .style(TabStyle::theme());
-                let content = row![column![
-                    column![
-                        container(glyphbar).style(ToolbarStyle::theme()),
-                        row![tabs, new_tab_btn],
-                    ]
-                    .spacing(0),
-                    scrollable(out_cells)
-                        .height(Length::Fill)
-                        .id(SCROLL_ID.clone()),
-                    inp
-                ]
-                .spacing(20)
-                .max_width(800),];
-                container(content)
+            Beacon::Loading => text("loading").into(),
+            Beacon::Loaded(
+                s @ State {
+                    input_value,
+                    eval_cells: outs,
+                    tab_at: at,
+                    focus,
+                    panes,
+                    ..
+                },
+            ) => {
+                let glyphbar = toolbar();
+                let focus = focus;
+                let total_panes = panes.len();
+                let pane_grid = PaneGrid::new(&panes, |id, pane, is_maximized| {
+                    let is_focused = *focus == Some(id);
+                    let pane_outs = outs
+                        .0
+                        .get(&0)
+                        .and_then(|h| h.get(unsafe { &std::mem::transmute::<_, usize>(id) }));
+                    pane_grid::Content::new(responsive(move |size| {
+                        view_pane(
+                            id,
+                            total_panes,
+                            pane.is_pinned,
+                            &input_value,
+                            pane_outs,
+                            *at,
+                        )
+                        .into()
+                    }))
+                })
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .spacing(10)
+                .on_click(Message::Clicked)
+                .on_drag(Message::Dragged)
+                .on_resize(10, Message::Resized);
+                container(column![glyphbar, pane_grid])
                     .width(Length::Fill)
-                    .center_x()
-                    .style(CanvasStyle::theme())
+                    .height(Length::Fill)
+                    .padding(10)
                     .into()
             }
         }
