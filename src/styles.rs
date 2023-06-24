@@ -13,6 +13,7 @@ pub struct ErroredCellStyle;
 pub struct ActiveTabStyle;
 pub struct InputStyle;
 pub struct TooltipStyle;
+pub struct ScrollbarStyle;
 
 impl iced::widget::button::StyleSheet for BtnStyle {
     type Style = iced::Theme;
@@ -192,5 +193,68 @@ impl iced::widget::container::StyleSheet for TooltipStyle {
 impl TooltipStyle {
     pub fn theme() -> iced::theme::Container {
         iced::theme::Container::Custom(Box::from(TooltipStyle))
+    }
+}
+
+impl iced::widget::scrollable::StyleSheet for ScrollbarStyle {
+    type Style = iced::Theme;
+
+    fn active(&self, style: &Self::Style) -> iced_style::scrollable::Scrollbar {
+        iced_style::scrollable::Scrollbar {
+            background: Some(iced::Background::Color(Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            })),
+            border_radius: [0.0, 0.0, 0.0, 0.0].into(),
+            border_width: 4.0,
+            border_color: Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            },
+            scroller: iced_style::scrollable::Scroller {
+                color: Color::WHITE,
+                border_radius: [0.0, 0.0, 0.0, 0.0].into(),
+                border_width: 4.0,
+                border_color: Color::TRANSPARENT,
+            },
+        }
+    }
+
+    fn hovered(
+        &self,
+        style: &Self::Style,
+        is_mouse_over_scrollbar: bool,
+    ) -> iced_style::scrollable::Scrollbar {
+        iced_style::scrollable::Scrollbar {
+            background: Some(iced::Background::Color(Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            })),
+            border_radius: [0.0, 0.0, 0.0, 0.0].into(),
+            border_width: 4.0,
+            border_color: Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            },
+            scroller: iced_style::scrollable::Scroller {
+                color: Color::WHITE,
+                border_radius: [0.0, 0.0, 0.0, 0.0].into(),
+                border_width: 4.0,
+                border_color: Color::TRANSPARENT,
+            },
+        }
+    }
+}
+impl ScrollbarStyle {
+    pub fn theme() -> iced::theme::Scrollable {
+        iced::theme::Scrollable::Custom(Box::from(ScrollbarStyle))
     }
 }
