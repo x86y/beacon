@@ -1,4 +1,6 @@
-use crate::History;
+use std::collections::HashMap;
+
+use crate::HistoryMap;
 use async_std::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -17,8 +19,8 @@ pub enum SaveError {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SavedState {
-    pub input_val: String,
-    pub history: History,
+    pub input_val: HashMap<usize, String>,
+    pub history: HistoryMap,
     pub at: usize,
 }
 
