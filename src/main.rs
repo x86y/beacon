@@ -13,6 +13,7 @@ use iced_runtime::font::load;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::time::Instant;
+use views::tabs::tab_view;
 // use tracing::{event as e, info, instrument, Level};
 
 mod docs;
@@ -28,13 +29,13 @@ use crate::widgets::text_input;
 use utils::keval;
 use utils::{truncate, HistoryMap, REPL};
 use views::pane::{view_pane, Pane};
-use views::toolbar::toolbar;
+use views::toolbar::toolbar_view;
 
 pub static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 
 pub fn main() -> iced::Result {
-    tracing_subscriber::fmt::init();
+    // tracing_subscriber::fmt::init();
     Beacon::run(Settings {
         window: window::Settings {
             size: (430, 800),
@@ -426,14 +427,16 @@ impl Application for Beacon {
                     ..
                 },
             ) => {
-                let glyphbar = toolbar();
+                let glyphbar = toolbar_view();
+                let tabs = tab_view(outs, *at);
+
                 let focus = focus;
                 let total_panes = panes.len();
                 let pane_grid = PaneGrid::new(&panes, |id, pane, is_maximized| {
                     let is_focused = *focus == Some(id);
                     let pane_outs = outs
                         .0
-                        .get(&0)
+                        .get(at)
                         .and_then(|h| h.get(unsafe { &std::mem::transmute::<_, usize>(id) }));
                     pane_grid::Content::new(responsive(move |size| {
                         view_pane(
@@ -453,7 +456,7 @@ impl Application for Beacon {
                 .on_click(Message::Clicked)
                 .on_drag(Message::Dragged)
                 .on_resize(10, Message::Resized);
-                container(column![glyphbar, pane_grid])
+                container(column![glyphbar, tabs, pane_grid])
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .padding(10)

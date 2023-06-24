@@ -17,9 +17,9 @@ iced = { git = "https://github.com/iced-rs/iced", features = ["async-std", "debu
 iced_core = { git = "https://github.com/iced-rs/iced", rev = "b38f7d28372712e345672515d8c1643bc040c1f1" }
 iced_runtime = { git = "https://github.com/iced-rs/iced", rev = "b38f7d28372712e345672515d8c1643bc040c1f1" }
 iced_style = { git = "https://github.com/iced-rs/iced", rev = "b38f7d28372712e345672515d8c1643bc040c1f1" }
-itertools = "0.11.0"
-tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+# itertools = "0.11.0"
+# tracing = "0.1.37"
+# tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 ngnk = { version = "0.2.3", optional = true}
 
 

@@ -22,7 +22,7 @@ static GLYPHS: Lazy<[char; 64]> = Lazy::new(|| {
     ]
 });
 
-pub fn toolbar<'a>() -> Element<'a, Message> {
+pub fn toolbar_view<'a>() -> Element<'a, Message> {
     container(
         GLYPHS
             .iter()
