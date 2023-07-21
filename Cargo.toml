@@ -1,0 +1,24 @@
+[package]
+name = "beacon"
+description = "Native GUI for BQN"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+once_cell = "1.15"
+async-std = "1.0"
+directories-next = "2.0"
+cbqn = "0.0.8"
+phf = "0.11.1"
+unicode-segmentation = "1.10.1"
+iced = { version = "0.7.0", features = ["async-std", "debug"] }
+iced_native = "0.8.0"
+iced_style = "0.6.0"
+itertools = "0.10.5"
+
+[package.metadata.bundle]
+name = "Beacon"
+identifier = "io.github.me.bqn"
+icon = ["assets/bqn@2x.icns"]
