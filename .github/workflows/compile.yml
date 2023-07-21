@@ -1,34 +1,32 @@
+name: Release
+
 on: [push, pull_request]
-name: xcompile
+
 env:
-  PKG_CONFIG_PATH: "/usr/lib/x86_64-linux-gnu/pkgconfig"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          # - aarch64-apple-darwin
-          - x86_64-unknown-linux-gnu
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v3
-      - name: Toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: actions/cache@v3
         with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
-      - name: Install dependencies
-        run: |
-          sudo apt-get install cmake pkg-config libfreetype6-dev fontconfig libfontconfig libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev
-      - name: Cargo Build
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: build
-          args: --release --target=${{ matrix.target }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Sanity
+        run: ls D:/a/beacon/beacon
+      - name: Build
+        run: BQN_WASM="D:/a/beacon/beacon/BQN.wasm" cargo build --release --no-default-features --features=bqnwasm
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -36,3 +34,51 @@ jobs:
           files: |
             README.md
             LICENSE
+            target/release/beacon.exe
+  # macos:
+  #   runs-on: macos-11
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Install dependencies
+  #       run: brew install scdoc
+  #     - name: Install ARM target
+  #       run: rustup update && rustup target add aarch64-apple-darwin
+  #     - name: Test
+  #       run: cargo test --release
+  #     - name: Build ARM
+  #       run: cargo build --release --target=aarch64-apple-darwin
+  #     - name: Make DMG
+  #       run: make dmg-universal
+  #     - name: Upload Application
+  #       run: |
+  #         mv ./target/release/osx/Alacritty.dmg ./Alacritty-${GITHUB_REF##*/}.dmg
+  #         ./.github/workflows/upload_asset.sh ./Alacritty-${GITHUB_REF##*/}.dmg $GITHUB_TOKEN
+  # linux:
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Install dependencies
+  #       run: |
+  #         sudo apt-get install cmake pkg-config libfreetype6-dev libfontconfig1-dev \
+  #           libxcb-xfixes0-dev libxkbcommon-dev python3 scdoc
+  #     - name: Test
+  #       run: cargo test --release
+  #     - name: Generate manpages
+  #       run: |
+  #         scdoc < extra/man/alacritty.1.scd | gzip -c > "./alacritty.1.gz"
+  #         scdoc < extra/man/alacritty-msg.1.scd | gzip -c > "./alacritty-msg.1.gz"
+  #         scdoc < extra/man/alacritty.5.scd | gzip -c > "./alacritty.5.gz"
+  #         scdoc < extra/man/alacritty-bindings.5.scd | gzip -c > "./alacritty-bindings.5.gz"
+  #     - name: Upload Assets
+  #       run: |
+  #         mv ./extra/logo/alacritty-term.svg ./Alacritty.svg
+  #         ./.github/workflows/upload_asset.sh ./Alacritty.svg $GITHUB_TOKEN
+  #         ./.github/workflows/upload_asset.sh ./alacritty.1.gz $GITHUB_TOKEN
+  #         ./.github/workflows/upload_asset.sh ./alacritty-msg.1.gz $GITHUB_TOKEN
+  #         ./.github/workflows/upload_asset.sh ./extra/completions/alacritty.bash $GITHUB_TOKEN
+  #         ./.github/workflows/upload_asset.sh ./extra/completions/alacritty.fish $GITHUB_TOKEN
+  #         ./.github/workflows/upload_asset.sh ./extra/completions/_alacritty $GITHUB_TOKEN
+  #         ./.github/workflows/upload_asset.sh ./extra/linux/Alacritty.desktop $GITHUB_TOKEN
+  #         ./.github/workflows/upload_asset.sh ./extra/alacritty.info $GITHUB_TOKEN
