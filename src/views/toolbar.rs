@@ -35,6 +35,7 @@ pub fn toolbar_view<'a>() -> Element<'a, Message> {
                         glyph_to_documentation(*glyph),
                         tooltip::Position::FollowCursor,
                     )
+                    .font(Font::with_name("BQN386 Unicode"))
                     .style(TooltipStyle::theme()),
                 )
             })

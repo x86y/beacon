@@ -227,12 +227,8 @@ impl Application for Beacon {
                         state.panes.resize(&split, ratio);
                         Command::none()
                     }
-                    Message::Dragged(pane_grid::DragEvent::Dropped {
-                        pane,
-                        target,
-                        region,
-                    }) => {
-                        state.panes.split_with(&target, &pane, region);
+                    Message::Dragged(pane_grid::DragEvent::Dropped { pane, target }) => {
+                        state.panes.drop(&pane, target);
                         Command::none()
                     }
                     Message::Dragged(_) => Command::none(),

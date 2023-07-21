@@ -273,7 +273,7 @@ checksum = "b9ccdd8f2a161be9bd5c023df56f1b2a0bd1d83872ae53b71a84a12c9bf6e842"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -371,7 +371,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "syn 2.0.18",
+ "syn 2.0.26",
  "which",
 ]
 
@@ -508,7 +508,7 @@ checksum = "fdde5c9cd29ebd706ce1b35600920a33550e402fc998a2e53ad3b42c3c47a192"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -766,7 +766,7 @@ dependencies = [
 [[package]]
 name = "cosmic-text"
 version = "0.8.0"
-source = "git+https://github.com/hecrj/cosmic-text.git?rev=e8b10fd675832cb9c1cc9de30922beb4cf883876#e8b10fd675832cb9c1cc9de30922beb4cf883876"
+source = "git+https://github.com/hecrj/cosmic-text.git?rev=c3cd24dc972bb8fd55d016c81ac9fa637e0a4ada#c3cd24dc972bb8fd55d016c81ac9fa637e0a4ada"
 dependencies = [
  "aliasable",
  "fontdb",
@@ -933,6 +933,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "crunchy"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
+
+[[package]]
 name = "crypto-common"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -973,7 +979,7 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -984,7 +990,7 @@ checksum = "29a358ff9f12ec09c3e61fef9b5a9902623a695a46a917b07f269bff1445611a"
 dependencies = [
  "darling_core",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -1142,7 +1148,7 @@ dependencies = [
  "darling",
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -1380,7 +1386,7 @@ checksum = "89ca545a94061b6365f2c7355b4b32bd20df3ff95f02da9329b34ccc3bd6ee72"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -1511,7 +1517,7 @@ dependencies = [
 [[package]]
 name = "glyphon"
 version = "0.2.0"
-source = "git+https://github.com/hecrj/glyphon.git?rev=8dbf36020e5759fa9144517b321372266160113e#8dbf36020e5759fa9144517b321372266160113e"
+source = "git+https://github.com/hecrj/glyphon.git?rev=8324f20158a62f8520bad4ed09f6aa5552f8f2a6#8324f20158a62f8520bad4ed09f6aa5552f8f2a6"
 dependencies = [
  "cosmic-text",
  "etagere",
@@ -1605,6 +1611,16 @@ name = "half"
 version = "1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eabb4a44450da02c90444cf74558da904edde8fb4e9035a9a6a4e15445af0bd7"
+
+[[package]]
+name = "half"
+version = "2.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc52e53916c08643f1b56ec082790d1e86a32e58dc5268f897f313fbae7b4872"
+dependencies = [
+ "cfg-if",
+ "crunchy",
+]
 
 [[package]]
 name = "hash32"
@@ -1790,7 +1806,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.9.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -1803,7 +1819,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.9.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "bitflags 1.3.2",
  "instant",
@@ -1816,7 +1832,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.6.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "async-std",
  "futures",
@@ -1829,26 +1845,27 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.8.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
  "glam",
+ "half 2.3.1",
  "iced_core",
  "log",
  "raw-window-handle",
  "thiserror",
- "tiny-skia 0.9.1",
 ]
 
 [[package]]
 name = "iced_renderer"
 version = "0.1.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
  "iced_wgpu",
+ "log",
  "raw-window-handle",
  "thiserror",
 ]
@@ -1856,7 +1873,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.1.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -1866,7 +1883,7 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.8.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -1876,7 +1893,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.1.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -1886,14 +1903,14 @@ dependencies = [
  "raw-window-handle",
  "rustc-hash",
  "softbuffer",
- "tiny-skia 0.9.1",
+ "tiny-skia 0.10.0",
  "twox-hash",
 ]
 
 [[package]]
 name = "iced_wgpu"
 version = "0.10.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -1913,7 +1930,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.1.0"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "iced_renderer",
  "iced_runtime",
@@ -1927,7 +1944,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.9.1"
-source = "git+https://github.com/iced-rs/iced?rev=b38f7d28372712e345672515d8c1643bc040c1f1#b38f7d28372712e345672515d8c1643bc040c1f1"
+source = "git+https://github.com/iced-rs/iced?rev=fd077918db7643530c3a7318ed5777d2f3d8761b#fd077918db7643530c3a7318ed5777d2f3d8761b"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -2592,7 +2609,7 @@ checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -2643,7 +2660,7 @@ dependencies = [
  "proc-macro-error",
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -2675,7 +2692,7 @@ checksum = "3c02bfa6b3ba8af5434fa0531bf5701f750d983d4260acd6867faca51cdc4484"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -2809,7 +2826,7 @@ checksum = "39407670928234ebc5e6e580247dd567ad73a3578460c5990f9503df207e8f07"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -2872,7 +2889,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9825a04601d60621feed79c4e6b56d65db77cdca55cef43b46b0de1096d1c282"
 dependencies = [
  "proc-macro2",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -2917,9 +2934,9 @@ checksum = "dc375e1527247fe1a97d8b7156678dfe7c1af2fc075c9a4db3690ecd2a148068"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.60"
+version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dec2b086b7a862cf4de201096214fa870344cf922b2b30c167badb3af3195406"
+checksum = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
 dependencies = [
  "unicode-ident",
 ]
@@ -3429,9 +3446,9 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
-version = "1.0.164"
+version = "1.0.171"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e8c8cf938e98f769bc164923b06dce91cea1751522f46f8466461af04c9027d"
+checksum = "30e27d1e4fd7659406c492fd6cfaf2066ba8773de45ca75e855590f856dc34a9"
 dependencies = [
  "serde_derive",
 ]
@@ -3453,26 +3470,26 @@ version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2bef2ebfde456fb76bbcf9f59315333decc4fda0b2b44b420243c11e0f5ec1f5"
 dependencies = [
- "half",
+ "half 1.8.2",
  "serde",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.164"
+version = "1.0.171"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9735b638ccc51c28bf6914d90a2e9725b377144fc612c49a611fddd1b631d68"
+checksum = "389894603bd18c46fa56231694f8d827779c0951a667087194cf9de94ed24682"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
 name = "serde_json"
-version = "1.0.97"
+version = "1.0.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdf3bf93142acad5821c99197022e170842cdbc1c30482b98750c688c640842a"
+checksum = "d03b412469450d4404fe8499a268edd7f8b79fecb074b0d812ad64ca21f4031b"
 dependencies = [
  "itoa",
  "ryu",
@@ -3824,9 +3841,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.18"
+version = "2.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32d41677bcbe24c20c52e7c70b0d8db04134c5d1066bf98662e2871ad200ea3e"
+checksum = "45c3457aacde3c65315de5031ec191ce46604304d2446e803d71ade03308d970"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3914,7 +3931,7 @@ checksum = "f9456a42c5b0d803c8cd86e73dd7cc9edd429499f37a3550d286d5e86720569f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -3971,9 +3988,9 @@ dependencies = [
 
 [[package]]
 name = "tiny-skia"
-version = "0.9.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce2986c82f77818c7b9144c70818fdde98db15308e329ae2f7204d767808fd3c"
+checksum = "7db11798945fa5c3e5490c794ccca7c6de86d3afdd54b4eb324109939c6f37bc"
 dependencies = [
  "arrayref",
  "arrayvec",
@@ -3981,7 +3998,7 @@ dependencies = [
  "cfg-if",
  "log",
  "png",
- "tiny-skia-path 0.9.0",
+ "tiny-skia-path 0.10.0",
 ]
 
 [[package]]
@@ -3997,9 +4014,9 @@ dependencies = [
 
 [[package]]
 name = "tiny-skia-path"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7acb0ccda1ac91084353a56d0b69b0e29c311fd809d2088b1ed2f9ae1841c47"
+checksum = "2f60aa35c89ac2687ace1a2556eaaea68e8c0d47408a2e3e7f5c98a489e7281c"
 dependencies = [
  "arrayref",
  "bytemuck",
@@ -4047,7 +4064,7 @@ checksum = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -4128,7 +4145,7 @@ checksum = "5f4f31f56159e98206da9efd823404b79b6ef3143b4a7ab76e67b1751b25a4ab"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
 ]
 
 [[package]]
@@ -4499,7 +4516,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
  "wasm-bindgen-shared",
 ]
 
@@ -4556,7 +4573,7 @@ checksum = "54681b18a46765f095758388f2d0cf16eb8d4169b639ab575a8f5693af210c7b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.26",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
@@ -5376,7 +5393,7 @@ checksum = "1a515f5799fe4961cb532f983ce2b23082366b898e52ffbce459c86f67c8378a"
 [[package]]
 name = "winit"
 version = "0.28.6"
-source = "git+https://github.com/iced-rs/winit.git?rev=ac1ddfe0bd870910b3aa64a18d386fdd55b30a1d#ac1ddfe0bd870910b3aa64a18d386fdd55b30a1d"
+source = "git+https://github.com/iced-rs/winit.git?rev=c52db2045d0a2f1b8d9923870de1d4ab1994146e#c52db2045d0a2f1b8d9923870de1d4ab1994146e"
 dependencies = [
  "android-activity",
  "bitflags 1.3.2",
