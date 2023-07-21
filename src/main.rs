@@ -27,6 +27,7 @@ static REPL: Lazy<BQNValue> = Lazy::new(|| {
     ))
 });
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
+static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 static GLYPHS: Lazy<[&str; 64]> = Lazy::new(|| {
     [
         "+", "¨", "⊸", "⊑", "´", "∾", "×", "-", "≠", "∘", "˜", "=", "/", "<", "↕", "⥊", "⊢", "⟜",
@@ -43,7 +44,7 @@ macro_rules! bqn386 {
         })
     };
 }
-macro_rules! iosevka {
+macro_rules! _iosevka {
     ($q:expr) => {
         text($q).font(Font::External {
             name: "Iosevka",
@@ -82,6 +83,22 @@ struct State {
     tab_at: usize,
     dirty: bool,
     saving: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct History(HashMap<usize, Vec<EvalCell>>);
+impl History {
+    fn min_tab(&self) -> &usize {
+        self.0.keys().min().unwrap_or(&0)
+    }
+    fn max_tab(&self) -> &usize {
+        self.0.keys().max().unwrap_or(&0)
+    }
+    fn new() -> History {
+        let mut h = HashMap::new();
+        h.insert(0, vec![]);
+        History(h)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -232,7 +249,6 @@ impl Application for Beacon {
                             });
                         }
                         let now = Instant::now();
-                        //⎊{𝕊:\"Error: \"∾•CurrentError@}⋄V
                         let bqnv = REPL.call1(&state.input_value.clone().into());
                         let elapsed = now.elapsed();
                         fn truncate(s: &str, max_chars: usize) -> &str {
@@ -251,7 +267,10 @@ impl Application for Beacon {
                                 src: state.input_value.clone(),
                                 time: elapsed,
                             });
-                        Command::none()
+                        scrollable::snap_to(
+                            SCROLL_ID.clone(),
+                            scrollable::RelativeOffset { x: 0.0, y: 1.0 },
+                        )
                     }
                     _ => Command::none(),
                 };
@@ -386,7 +405,9 @@ impl Application for Beacon {
                     column![tabs, new_tab_btn],
                     column![
                         container(glyphbar).style(ToolbarStyle::theme()),
-                        scrollable(out_cells).height(Length::Fill),
+                        scrollable(out_cells)
+                            .height(Length::Fill)
+                            .id(SCROLL_ID.clone()),
                         inp
                     ]
                     .spacing(20)
@@ -424,21 +445,5 @@ impl Application for Beacon {
             }
             _ => None,
         })
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct History(HashMap<usize, Vec<EvalCell>>);
-impl History {
-    fn min_tab(&self) -> &usize {
-        self.0.keys().min().unwrap_or(&0)
-    }
-    fn max_tab(&self) -> &usize {
-        self.0.keys().max().unwrap_or(&0)
-    }
-    fn new() -> History {
-        let mut h = HashMap::new();
-        h.insert(0, vec![]);
-        History(h)
     }
 }
