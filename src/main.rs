@@ -446,6 +446,11 @@ impl Application for Beacon {
                         )
                         .into()
                     }))
+                                .style(if is_focused {
+                style::pane_focused
+            } else {
+                style::pane_active
+            })
                 })
                 .width(Length::Fill)
                 .height(Length::Fill)
@@ -486,5 +491,40 @@ impl Application for Beacon {
             }
             _ => None,
         })
+    }
+}
+
+mod style {
+    use iced::widget::container;
+    use iced::Theme;
+    use iced::Background;
+    use iced::Color;
+
+    pub fn pane_active(theme: &Theme) -> container::Appearance {
+        let palette = theme.extended_palette();
+        container::Appearance {
+            background: Some(Background::Color(Color::from_rgb(
+                12.0 / 255.0,
+                12.0 / 255.0,
+                12.0 / 255.0,
+            ))),
+            border_width: 2.0,
+            border_color: palette.background.strong.color,
+            ..Default::default()
+        }
+    }
+
+    pub fn pane_focused(theme: &Theme) -> container::Appearance {
+        let palette = theme.extended_palette();
+        container::Appearance {
+            background: Some(Background::Color(Color::from_rgb(
+                12.0 / 255.0,
+                12.0 / 255.0,
+                12.0 / 255.0,
+            ))),
+            border_width: 2.0,
+            border_color: palette.primary.strong.color,
+            ..Default::default()
+        }
     }
 }
