@@ -5,6 +5,7 @@ use iced::Color;
 
 pub struct BtnStyle;
 pub struct TabStyle;
+pub struct TransparentBtn;
 pub struct CanvasStyle;
 pub struct ToolbarStyle;
 pub struct SrcCellStyle;
@@ -48,6 +49,26 @@ impl iced::widget::button::StyleSheet for TabStyle {
 impl TabStyle {
     pub fn theme() -> iced::theme::Button {
         iced::theme::Button::Custom(Box::from(TabStyle))
+    }
+}
+
+impl iced::widget::button::StyleSheet for TransparentBtn {
+    type Style = iced::Theme;
+    fn active(&self, _: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(Color::from_rgb(
+                12.0 / 255.0,
+                12.0 / 255.0,
+                12.0 / 255.0,
+            ))),
+            text_color: Color::WHITE,
+            ..Default::default()
+        }
+    }
+}
+impl TransparentBtn {
+    pub fn theme() -> iced::theme::Button {
+        iced::theme::Button::Custom(Box::from(TransparentBtn))
     }
 }
 

@@ -6,8 +6,9 @@ use crate::widgets::text_input;
 use crate::{styles::*, INPUT_ID};
 use crate::{Message, SCROLL_ID};
 use iced::alignment::{self, Alignment};
-use iced::widget::pane_grid;
+use iced::widget::{pane_grid, svg};
 use iced::{
+    color, theme,
     widget::{button, column, container, row, scrollable, text, Column, Container},
     Element, Length,
 };
@@ -91,24 +92,28 @@ pub fn view_pane<'a>(
             .collect::<Vec<Element<_>>>(),
     )
     .spacing(8);
+    let handle = |n| svg::Handle::from_path(format!(
+            "{}/assets/{n}.svg",
+            env!("CARGO_MANIFEST_DIR")
+        ));
+
     let button = |label, message| {
-        button(
-            text(label)
-                .horizontal_alignment(alignment::Horizontal::Center)
-                .size(16),
-        )
+        button( svg(handle(label)).width(Length::Fill).height(Length::Fill).style(theme::Svg::custom_fn(|_theme| svg::Appearance {
+                    color: Some(color!(0xffffff)),
+                })))
         .padding(2)
-        .style(TabStyle::theme())
+        .style(TransparentBtn::theme())
         .on_press(message)
     };
 
+
     let mut controls = row![
-        button("-", Message::Split(pane_grid::Axis::Horizontal, pane),),
-        button("|", Message::Split(pane_grid::Axis::Vertical, pane),)
+        button("horizontal", Message::Split(pane_grid::Axis::Horizontal, pane),),
+        button("vertical", Message::Split(pane_grid::Axis::Vertical, pane),)
     ]
     .spacing(5);
     if total_panes > 1 && !is_pinned {
-        controls = controls.push(button("X", Message::Close(pane)));
+        controls = controls.push(button("cross", Message::Close(pane)));
     }
 
     let content = column![
