@@ -1,4 +1,4 @@
-use cbqn::eval;
+use cbqn::{eval, BQNValue};
 use iced::{
     event::{self, Event},
     keyboard::{self, Modifiers},
@@ -21,6 +21,11 @@ use crate::styles::*;
 use crate::text_input::text_input;
 use crate::wrap::Wrap;
 
+static REPL: Lazy<BQNValue> = Lazy::new(|| {
+    dbg!(eval(
+        "(•ReBQN{repl⇐\"loose\"})⎊{𝕊: \"Error: \"∾•CurrentError@}"
+    ))
+});
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 static GLYPHS: Lazy<[&str; 64]> = Lazy::new(|| {
     [
@@ -85,6 +90,7 @@ enum Message {
     Saved(Result<(), SaveError>),
     InputChanged(String),
     RunInput,
+    InputFocus,
     FillInput(String),
     ToolbarClick(String),
     TabChanged(usize),
@@ -209,6 +215,11 @@ impl Application for Beacon {
                         *state.eval_cells.0.get_mut(&state.tab_at).unwrap() = vec![];
                         Command::none()
                     }
+                    Message::InputFocus => {
+                        text_input::focus::<Message>(INPUT_ID.clone()); //FIXME doesn't focus for
+                                                                        //some reason
+                        Command::none()
+                    }
                     Message::RunInput => {
                         if state.input_value == "clear" {
                             state.eval_cells = History::new();
@@ -221,13 +232,8 @@ impl Application for Beacon {
                             });
                         }
                         let now = Instant::now();
-                        let bqnv = eval(
-                            format!(
-                                "v←(•BQN⎊{{𝕊: \"Error: \"∾•CurrentError@}})\"{}\"⋄•Fmt v",
-                                state.input_value.replace('\"', "\"\"")
-                            )
-                            .as_str(),
-                        );
+                        //⎊{𝕊:\"Error: \"∾•CurrentError@}⋄V
+                        let bqnv = REPL.call1(&state.input_value.clone().into());
                         let elapsed = now.elapsed();
                         fn truncate(s: &str, max_chars: usize) -> &str {
                             match s.char_indices().nth(max_chars) {
@@ -293,7 +299,8 @@ impl Application for Beacon {
                         name: "BQN386",
                         bytes: include_bytes!("../assets/BQN386.ttf"),
                     })
-                    .on_submit(Message::RunInput);
+                    .on_submit(Message::RunInput)
+                    .id(INPUT_ID.clone());
                 let glyphbar: Container<_> = Container::new(
                     GLYPHS
                         .iter()
@@ -326,7 +333,7 @@ impl Application for Beacon {
                                 .style(BtnStyle::theme())
                                 .into(),
                                 button(
-                                    iosevka!(res.clone())
+                                    bqn386!(res.clone())
                                         .style(if did_error {
                                             ErroredCellStyle::theme()
                                         } else {
@@ -412,6 +419,9 @@ impl Application for Beacon {
             kp!(keyboard::KeyCode::N, Modifiers::CTRL) => Some(Message::TabNext),
             kp!(keyboard::KeyCode::P, Modifiers::CTRL) => Some(Message::TabPrev),
             kp!(keyboard::KeyCode::L, Modifiers::CTRL) => Some(Message::BufferClear),
+            (Event::Keyboard(keyboard::Event::CharacterReceived(_)), event::Status::Ignored) => {
+                Some(Message::InputFocus)
+            }
             _ => None,
         })
     }
