@@ -28,6 +28,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: target/release/beacon.exe
+
   linux:
     runs-on: ubuntu-latest
     steps:
@@ -42,13 +43,20 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build bqn shared lib
+        run: |
+          git clone https://github.com/dzaima/CBQN
+          cd CBQN
+          FFI=0 make shared-o3
+          mv libcbqn.so ../
       - name: Build
-        run: cargo build --release
+        run: RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.so" cargo build --release
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: target/release/beacon
+
   macos:
     runs-on: macos-11
     steps:
@@ -63,11 +71,15 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install ARM target
-        run: rustup update && rustup target add aarch64-apple-darwin
+        run: |
+          rustup update && rustup target add aarch64-apple-darwin
+          cargo install cargo-bundle
       - name: Build ARM
-        run: RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.dylib" cargo build --release --target=aarch64-apple-darwin
+        run: RUSTFLAGS="-L ${{ github.workspace }}" LD_LIBRARY_PATH="${{ github.workspace }}/libcbqn.dylib" cargo bundle --release --target=aarch64-apple-darwin
+      - name: Rename
+        run: mv target/aarch64-apple-darwin/release/bundle/osx/Beacon.app .
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: target/release/beacon
+          files: Beacon.app
