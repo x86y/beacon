@@ -7,6 +7,7 @@ use iced::{
     window, Application, Command, Element, Length, Settings, Subscription, Theme,
 };
 use iced_core::{text::LineHeight, Font};
+use iced_runtime::font::load;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -114,6 +115,7 @@ impl History {
 #[derive(Debug, Clone)]
 enum Message {
     Loaded(Result<SavedState, LoadError>),
+    FontLoaded(Result<(), iced_runtime::font::Error>),
     Saved(Result<(), SaveError>),
     InputChanged(String),
     RunInput,
@@ -140,7 +142,10 @@ impl Application for Beacon {
         ngnk::kinit();
         (
             Beacon::Loading,
-            Command::perform(SavedState::load(), Message::Loaded),
+            Command::batch(vec![
+                load(include_bytes!("../assets/BQN386.ttf").as_slice()).map(Message::FontLoaded),
+                Command::perform(SavedState::load(), Message::Loaded),
+            ]),
         )
     }
     fn theme(&self) -> Self::Theme {
