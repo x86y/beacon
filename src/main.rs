@@ -275,7 +275,7 @@ impl Application for Beacon {
                             });
                         }
                         let now = Instant::now();
-                        let bqnv = REPL.call1(&state.input_value.clone().into()).unwrap();
+                        let bqnc = REPL.call1(&state.input_value.clone().into());
                         #[cfg(feature = "k")]
                         println!("{}", k::keval("`0:3+3", vec![]));
                         let elapsed = now.elapsed();
@@ -291,9 +291,17 @@ impl Application for Beacon {
                             .get_mut(&state.tab_at)
                             .unwrap()
                             .push(EvalCell {
-                                res: truncate(format!("{:?}", bqnv).as_str(), 500).to_string(),
+                                res: truncate(
+                                    match bqnc {
+                                        Ok(b) => format!("{b:?}"),
+                                        Err(e) => format!("{e}"),
+                                    }
+                                    .as_str(),
+                                    500,
+                                )
+                                .to_string(),
                                 src: { state.input_value.clone() },
-                                ty: { unsafe { std::mem::transmute(bqnv.bqn_type()) } },
+                                ty: { Ty::Number },
                                 time: elapsed,
                             });
                         scrollable::snap_to(
@@ -370,8 +378,8 @@ impl Application for Beacon {
                         .map(|txt| {
                             let mut res = txt.res.to_string();
                             let mut did_error = false;
-                            if txt.res.starts_with("\"Error") {
-                                res = res.replace('\"', "");
+                            if txt.res.starts_with("CBQN error:") {
+                                res = res.replace("CBQN error: ", "");
                                 did_error = true;
                             }
                             let mut v = vec![
