@@ -3,57 +3,54 @@ use iced::{
     event::{self, Event},
     keyboard::{self, Modifiers},
     subscription,
-    widget::{button, column, container, row, scrollable, text, Column, Container},
-    window, Application, Command, Element, Font, Length, Settings, Subscription, Theme,
+    widget::{button, column, container, row, scrollable, text, tooltip, Column, Container},
+    window, Application, Command, Element, Length, Settings, Subscription, Theme,
 };
+use iced_core::{text::LineHeight, Font};
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use std::{collections::HashMap, time::Duration};
+// use tracing::{event as e, info, instrument, Level};
 
+mod docs;
+#[cfg(feature = "k")]
+mod k;
 mod save;
 mod styles;
-mod text_input;
-mod wrap;
+mod widgets;
 use crate::save::*;
 use crate::styles::*;
-use crate::text_input::text_input;
-use crate::wrap::Wrap;
+use crate::widgets::text_input;
+use crate::widgets::wrap::Wrap;
+use docs::content::glyph_to_documentation;
 
 static REPL: Lazy<BQNValue> = Lazy::new(|| {
-    dbg!(eval(
-        "(•ReBQN{repl⇐\"loose\"})⎊{𝕊: \"Error: \"∾•CurrentError@}"
-    ))
+    eval("(•ReBQN{repl⇐\"loose\"})⎊{𝕊: \"Error: \"∾•CurrentError@}")
+        .expect("Err on repl construction")
 });
 static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
-static GLYPHS: Lazy<[&str; 64]> = Lazy::new(|| {
+static GLYPHS: Lazy<[char; 64]> = Lazy::new(|| {
     [
-        "+", "¨", "⊸", "⊑", "´", "∾", "×", "-", "≠", "∘", "˜", "=", "/", "<", "↕", "⥊", "⊢", "⟜",
-        "⊏", "≡", "∧", "˘", "!", ">", "⌽", "↓", "¬", "↑", "∨", "`", "◶", "⍟", "⌜", "⊣", "⌾", "⌈",
-        "⋈", "⊔", "⌊", "»", "⊐", "∊", "○", "≤", "|", "≢", "⍉", "÷", "≍", "˝", "⁼", "«", "≥", "˙",
-        "⍋", "⍷", "⋆", "⊘", "⎉", "⚇", "⊒", "√", "⍒", "⎊",
+        '+', '¨', '⊸', '⊑', '´', '∾', '×', '-', '≠', '∘', '˜', '=', '/', '<', '↕', '⥊', '⊢', '⟜',
+        '⊏', '≡', '∧', '˘', '!', '>', '⌽', '↓', '¬', '↑', '∨', '`', '◶', '⍟', '⌜', '⊣', '⌾', '⌈',
+        '⋈', '⊔', '⌊', '»', '⊐', '∊', '○', '≤', '|', '≢', '⍉', '÷', '≍', '˝', '⁼', '«', '≥', '˙',
+        '⍋', '⍷', '⋆', '⊘', '⎉', '⚇', '⊒', '√', '⍒', '⎊',
     ]
 });
 macro_rules! bqn386 {
     ($q:expr) => {
-        text($q).font(Font::External {
-            name: "BQN386",
-            bytes: include_bytes!("../assets/BQN386.ttf"),
-        })
-    };
-}
-macro_rules! _iosevka {
-    ($q:expr) => {
-        text($q).font(Font::External {
-            name: "Iosevka",
-            bytes: include_bytes!("../assets/iosevka-term-medium.ttf"),
-        })
+        text($q)
+            .font(Font::with_name("BQN386 Unicode"))
+            .size(14)
+            .line_height(LineHeight::Absolute(12.into()))
     };
 }
 
 pub fn main() -> iced::Result {
+    tracing_subscriber::fmt::init();
     Beacon::run(Settings {
         window: window::Settings {
             size: (430, 800),
@@ -138,6 +135,9 @@ impl Application for Beacon {
     type Flags = ();
 
     fn new(_flags: ()) -> (Beacon, Command<Message>) {
+        // let _ = REPL.call1(&libs.to_string().into());
+        #[cfg(feature = "k")]
+        ngnk::kinit();
         (
             Beacon::Loading,
             Command::perform(SavedState::load(), Message::Loaded),
@@ -245,9 +245,11 @@ impl Application for Beacon {
                         *state.eval_cells.0.get_mut(&state.tab_at).unwrap() = vec![];
                         Command::none()
                     }
-                    Message::InputFocus => {
-                        text_input::focus::<Message>(INPUT_ID.clone()); //FIXME doesn't focus for
-                                                                        //some reason
+                    Message::InputFocus =>
+                    // FIXME
+                    // text_input::focus::<Message>(INPUT_ID.clone()),
+                    // Message::InputFocus,
+                    {
                         Command::none()
                     }
                     Message::RunInput => {
@@ -268,7 +270,9 @@ impl Application for Beacon {
                             });
                         }
                         let now = Instant::now();
-                        let bqnv = REPL.call1(&state.input_value.clone().into());
+                        let bqnv = REPL.call1(&state.input_value.clone().into()).unwrap();
+                        #[cfg(feature = "k")]
+                        println!("{}", k::keval("`0:3+3", vec![]));
                         let elapsed = now.elapsed();
                         fn truncate(s: &str, max_chars: usize) -> &str {
                             match s.char_indices().nth(max_chars) {
@@ -282,23 +286,9 @@ impl Application for Beacon {
                             .get_mut(&state.tab_at)
                             .unwrap()
                             .push(EvalCell {
-                                res: truncate(format!("{bqnv:?}").as_str(), 500).to_string(),
-                                src: state.input_value.clone(),
-                                ty: {
-                                    if format!("{bqnv:?}").as_str().contains("Error") {
-                                        Ty::Err
-                                    } else {
-                                        match bqnv.bqn_type() {
-                                            cbqn::BQNType::Array => Ty::Array,
-                                            cbqn::BQNType::Number => Ty::Number,
-                                            cbqn::BQNType::Character => Ty::Character,
-                                            cbqn::BQNType::Function => Ty::Function,
-                                            cbqn::BQNType::Mod1 => Ty::Mod1,
-                                            cbqn::BQNType::Mod2 => Ty::Mod2,
-                                            cbqn::BQNType::Namespace => Ty::Namespace,
-                                        }
-                                    }
-                                },
+                                res: truncate(format!("{:?}", bqnv).as_str(), 500).to_string(),
+                                src: { state.input_value.clone() },
+                                ty: { unsafe { std::mem::transmute(bqnv.bqn_type()) } },
                                 time: elapsed,
                             });
                         scrollable::snap_to(
@@ -344,24 +334,27 @@ impl Application for Beacon {
                 tab_at: at,
                 ..
             }) => {
-                let inp = text_input("", input_value, Message::InputChanged)
+                let inp = text_input::text_input("", input_value)
                     .padding(15)
                     .style(InputStyle::theme())
-                    .size(24)
-                    .font(Font::External {
-                        name: "BQN386",
-                        bytes: include_bytes!("../assets/BQN386.ttf"),
-                    })
+                    .size(18)
+                    .font(Font::with_name("BQN386 Unicode"))
                     .on_submit(Message::RunInput)
+                    .on_input(Message::InputChanged)
                     .id(INPUT_ID.clone());
                 let glyphbar: Container<_> = Container::new(
                     GLYPHS
                         .iter()
                         .fold(Wrap::new(), |wrap, glyph| {
                             wrap.push(
-                                button(bqn386!(glyph).size(24))
-                                    .style(BtnStyle::theme())
-                                    .on_press(Message::ToolbarClick(glyph.to_string())),
+                                tooltip(
+                                    button(bqn386!(glyph))
+                                        .style(BtnStyle::theme())
+                                        .on_press(Message::ToolbarClick(glyph.to_string())),
+                                    glyph_to_documentation(*glyph),
+                                    tooltip::Position::FollowCursor,
+                                )
+                                .style(TooltipStyle::theme()),
                             )
                         })
                         .spacing(1),
@@ -372,40 +365,33 @@ impl Application for Beacon {
                         .map(|txt| {
                             let mut res = txt.res.to_string();
                             let mut did_error = false;
-                            if let Ty::Err = txt.ty {
+                            if txt.res.starts_with("\"Error") {
                                 res = res.replace('\"', "");
                                 did_error = true;
                             }
                             let mut v = vec![
                                 button(
                                     bqn386!(" ".to_string() + &txt.src)
-                                        .size(20)
                                         .style(SrcCellStyle::theme()),
                                 )
                                 .on_press(Message::FillInput(txt.src.to_string()))
                                 .style(BtnStyle::theme())
                                 .into(),
-                                button(
-                                    bqn386!(res.clone())
-                                        .style(if did_error {
-                                            ErroredCellStyle::theme()
-                                        } else {
-                                            Default::default()
-                                        })
-                                        .size(20),
-                                )
+                                button(bqn386!(res.clone()).style(if did_error {
+                                    ErroredCellStyle::theme()
+                                } else {
+                                    Default::default()
+                                }))
                                 .on_press(Message::FillInput(res))
                                 .style(BtnStyle::theme())
                                 .into(),
                             ];
-                            if !did_error {
-                                v.push(
-                                    bqn386!(format!("{}ms", txt.time.as_millis()))
-                                        .style(ElapsedTimeStyle::theme())
-                                        .size(16)
-                                        .into(),
-                                )
-                            }
+                            v.push(
+                                bqn386!(format!("{}ms", txt.time.as_millis()))
+                                    .size(12)
+                                    .style(ElapsedTimeStyle::theme())
+                                    .into(),
+                            );
                             Container::new(column(v))
                                 .width(Length::Fill)
                                 .style(CanvasStyle::theme())
@@ -414,7 +400,7 @@ impl Application for Beacon {
                         .collect::<Vec<Element<_>>>(),
                 )
                 .spacing(8);
-                let tabs: Column<Message> = column({
+                let tabs: iced::widget::Row<Message> = row({
                     outs.0
                         .keys()
                         .sorted()
@@ -435,18 +421,19 @@ impl Application for Beacon {
                 let new_tab_btn = button(bqn386!("+"))
                     .on_press(Message::TabCreate)
                     .style(TabStyle::theme());
-                let content = row![
-                    column![tabs, new_tab_btn],
+                let content = row![column![
                     column![
                         container(glyphbar).style(ToolbarStyle::theme()),
-                        scrollable(out_cells)
-                            .height(Length::Fill)
-                            .id(SCROLL_ID.clone()),
-                        inp
+                        row![tabs, new_tab_btn],
                     ]
-                    .spacing(20)
-                    .max_width(800)
-                ];
+                    .spacing(0),
+                    scrollable(out_cells)
+                        .height(Length::Fill)
+                        .id(SCROLL_ID.clone()),
+                    inp
+                ]
+                .spacing(20)
+                .max_width(800),];
                 container(content)
                     .width(Length::Fill)
                     .center_x()
