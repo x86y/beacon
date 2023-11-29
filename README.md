@@ -21,6 +21,14 @@ A native and a cross platform guide for BQN array programming language.
 > cargo run --release
 ```
 
+Alternatively, a nix flake is provided:
+
+``` console
+$ git clone https://github.com/x86y/beacon
+$ cd beacon
+$ nix run   # Alternatively: nix develop -c cargo run --release
+```
+
 ## Windows instructions
 ```sh
 > git clone https://github.com/x86y/beacon
