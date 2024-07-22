@@ -1,8 +1,7 @@
 use iced::{
-    widget::{button, row, text, Container},
-    Element,
+    widget::{button, row, text, text::LineHeight, Container},
+    Element, Font,
 };
-use iced_core::{text::LineHeight, Font};
 
 use crate::{
     utils::{macros::bqn386, HistoryMap},

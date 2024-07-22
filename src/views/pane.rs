@@ -9,11 +9,12 @@ use iced::alignment::Alignment;
 use iced::widget::{pane_grid, svg};
 use iced::{
     color,
-    widget::{button, column, container, row, scrollable, text, Column, Container},
-    Element, Length,
+    widget::{
+        button, column, container, row, scrollable, text, text::LineHeight, Column, Container,
+    },
+    Element, Font, Length,
 };
 
-use iced_core::{text::LineHeight, Font};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]

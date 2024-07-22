@@ -11,25 +11,27 @@ pub use value::Value;
 
 use editor::Editor;
 
-use iced_core::alignment;
-use iced_core::clipboard::{self, Clipboard};
-use iced_core::event::{self, Event};
-use iced_core::keyboard;
-use iced_core::keyboard::key;
-use iced_core::layout;
-use iced_core::mouse::{self, click};
-use iced_core::renderer;
-use iced_core::text::paragraph;
-use iced_core::text::{self, Text};
-use iced_core::time::{Duration, Instant};
-use iced_core::touch;
-use iced_core::widget;
-use iced_core::widget::operation::{self, Operation};
-use iced_core::widget::tree::{self, Tree};
-use iced_core::window;
-use iced_core::{
-    Background, Border, Color, Element, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
-    Size, Theme, Vector, Widget,
+use iced::advanced::{
+    clipboard, layout,
+    mouse::{self, click},
+    renderer,
+    text::{self, paragraph, Text},
+    widget::{
+        operation::{self, Operation},
+        tree::{self, Tree},
+    },
+    Clipboard, Layout, Shell, Widget,
+};
+use iced::alignment;
+use iced::event::{self, Event};
+use iced::keyboard;
+use iced::keyboard::key;
+use iced::time::{Duration, Instant};
+use iced::touch;
+use iced::window;
+use iced::{
+    Background, Border, Color, Element, Length, Padding, Pixels, Point, Rectangle, Size, Theme,
+    Vector,
 };
 use iced_runtime::task::{self, Task};
 use iced_runtime::Action;
@@ -1027,23 +1029,23 @@ pub enum Side {
 
 /// The identifier of a [`TextInput`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Id(widget::Id);
+pub struct Id(iced::advanced::widget::Id);
 
 impl Id {
     /// Creates a custom [`Id`].
     pub fn new(id: impl Into<std::borrow::Cow<'static, str>>) -> Self {
-        Self(widget::Id::new(id))
+        Self(iced::advanced::widget::Id::new(id))
     }
 
     /// Creates a unique [`Id`].
     ///
     /// This function produces a different [`Id`] every time it is called.
     pub fn unique() -> Self {
-        Self(widget::Id::unique())
+        Self(iced::advanced::widget::Id::unique())
     }
 }
 
-impl From<Id> for widget::Id {
+impl From<Id> for iced::advanced::widget::Id {
     fn from(id: Id) -> Self {
         id.0
     }
@@ -1400,4 +1402,3 @@ pub fn default(theme: &Theme, status: Status) -> Style {
         },
     }
 }
-
