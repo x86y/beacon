@@ -13,12 +13,9 @@ directories-next = "2.0"
 cbqn = { version = "0.1.0", default-features=false, optional = true }
 phf = "0.11.1"
 unicode-segmentation = "1.10.1"
-iced = { git = "https://github.com/iced-rs/iced", features = ["async-std", "debug", "lazy", "svg", "advanced"], rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
+iced = { git = "https://github.com/iced-rs/iced", features = ["async-std", "debug", "lazy", "svg", "advanced", "markdown", "highlighter"], rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
 iced_core = { git = "https://github.com/iced-rs/iced", rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
 iced_runtime = { git = "https://github.com/iced-rs/iced", rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
-# itertools = "0.11.0"
-# tracing = "0.1.37"
-# tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 ngnk = { version = "0.2.3", optional = true}
 
 
