@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, container, text, tooltip},
+    widget::{button, container, markdown, text, tooltip},
     Element,
 };
 use iced_core::{text::LineHeight, Font};
@@ -32,7 +32,14 @@ pub fn toolbar_view<'a>() -> Element<'a, Message> {
                         button(bqn386!(glyph))
                             .style(btnstyle)
                             .on_press(Message::ToolbarClick(glyph.to_string())),
-                        glyph_to_documentation(*glyph),
+                        markdown(
+                            markdown::parse(
+                                glyph_to_documentation(*glyph),
+                                iced::theme::Palette::DRACULA,
+                            ),
+                            markdown::Settings::default(),
+                            (),
+                        ),
                         tooltip::Position::FollowCursor,
                     )
                     .style(toolbarstyle),
