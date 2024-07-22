@@ -5,10 +5,10 @@ use crate::utils::EvalCell;
 use crate::widgets::text_input;
 use crate::{styles::*, INPUT_ID};
 use crate::{Message, SCROLL_ID};
-use iced::alignment::{self, Alignment};
+use iced::alignment::Alignment;
 use iced::widget::{pane_grid, svg};
 use iced::{
-    color, theme,
+    color,
     widget::{button, column, container, row, scrollable, text, Column, Container},
     Element, Length,
 };
@@ -39,14 +39,14 @@ pub fn view_pane<'a>(
     outs: Option<&'a Vec<EvalCell>>,
     idx: usize,
 ) -> Element<'a, Message> {
-    let inp = text_input::text_input(
+    let inp = text_input::TextInput::new(
         "",
         &input_value
             .get(&unsafe { std::mem::transmute::<_, usize>(pane) })
             .unwrap_or(&String::new()),
     )
-    .padding(15)
-    .style(InputStyle::theme())
+    .padding(2)
+    .style(inputstyle)
     .size(18)
     .font(Font::with_name("BQN386 Unicode"))
     .on_submit(Message::RunInput)
@@ -65,50 +65,72 @@ pub fn view_pane<'a>(
                     did_error = true;
                 }
                 let mut v = vec![
-                    button(bqn386!(" ".to_string() + &txt.src).style(SrcCellStyle::theme()))
-                        .on_press(Message::FillInput(txt.src.to_string()))
-                        .style(BtnStyle::theme())
-                        .into(),
-                    button(bqn386!(res.clone()).style(if did_error {
-                        ErroredCellStyle::theme()
+                    button(
+                        bqn386!(" ".to_string() + &txt.src)
+                            .color(iced::Color::from_rgba(0.3, 0.9, 0.3, 0.9)),
+                    )
+                    .on_press(Message::FillInput(txt.src.to_string()))
+                    .style(btnstyle)
+                    .into(),
+                    button(bqn386!(res.clone()).color(if did_error {
+                        iced::Color::from_rgba(1.0, 0.0, 0.1, 0.95)
                     } else {
-                        Default::default()
+                        iced::Color::WHITE
                     }))
                     .on_press(Message::FillInput(res))
-                    .style(BtnStyle::theme())
+                    .style(outstyle)
                     .into(),
                 ];
                 v.push(
                     bqn386!(format!("{}ms", txt.time.as_millis()))
                         .size(12)
-                        .style(ElapsedTimeStyle::theme())
+                        .color(iced::Color::from_rgba(1.0, 1.0, 1.0, 0.2))
                         .into(),
                 );
                 Container::new(column(v))
                     .width(Length::Fill)
-                    .style(CanvasStyle::theme())
+                    .style(canvasstyle)
                     .into()
             })
             .collect::<Vec<Element<_>>>(),
     )
     .spacing(8);
-    let handle = |n| svg::Handle::from_path(format!(
-            "{}/assets/{n}.svg",
-            env!("CARGO_MANIFEST_DIR")
-        ));
+    let handle =
+        |n| svg::Handle::from_path(format!("{}/assets/{n}.svg", env!("CARGO_MANIFEST_DIR")));
 
     let button = |label, message| {
-        button( svg(handle(label)).width(Length::Fill).height(Length::Fill).style(theme::Svg::custom_fn(|_theme| svg::Appearance {
-                    color: Some(color!(0xffffff)),
-                })))
+        button(svg(handle(label)).style(|_theme, _s| svg::Style {
+            color: Some(color!(0xffffff)),
+        }))
         .padding(2)
-        .style(TransparentBtn::theme())
+        .style(|theme, status| match status {
+            button::Status::Active => button::Style {
+                background: Some(iced::Background::Color(iced::Color::from_rgb(
+                    12.0 / 255.0,
+                    12.0 / 255.0,
+                    12.0 / 255.0,
+                ))),
+                text_color: iced::Color::WHITE,
+                ..Default::default()
+            },
+            _ => button::Style {
+                background: Some(iced::Background::Color(iced::Color::from_rgb(
+                    12.0 / 255.0,
+                    12.0 / 255.0,
+                    12.0 / 255.0,
+                ))),
+                text_color: iced::Color::WHITE,
+                ..Default::default()
+            },
+        })
         .on_press(message)
     };
 
-
     let mut controls = row![
-        button("horizontal", Message::Split(pane_grid::Axis::Horizontal, pane),),
+        button(
+            "horizontal",
+            Message::Split(pane_grid::Axis::Horizontal, pane),
+        ),
         button("vertical", Message::Split(pane_grid::Axis::Vertical, pane),)
     ]
     .spacing(5);
@@ -120,18 +142,16 @@ pub fn view_pane<'a>(
         controls,
         scrollable(out_cells)
             .height(Length::Fill)
-            .style(ScrollbarStyle::theme())
             .id(SCROLL_ID.clone()),
         inp
     ]
     .width(Length::Fill)
     .spacing(10)
-    .align_items(Alignment::Center);
+    .align_x(Alignment::Center);
 
     container(content)
         .width(Length::Fill)
         .height(Length::Fill)
         .padding(5)
-        .center_y()
         .into()
 }

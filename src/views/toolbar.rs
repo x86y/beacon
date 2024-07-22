@@ -7,7 +7,7 @@ use once_cell::sync::Lazy;
 
 use crate::{
     docs::content::glyph_to_documentation,
-    styles::{BtnStyle, TooltipStyle},
+    styles::{btnstyle, toolbarstyle},
     utils::macros::bqn386,
     widgets::wrap::Wrap,
     Message,
@@ -30,16 +30,15 @@ pub fn toolbar_view<'a>() -> Element<'a, Message> {
                 wrap.push(
                     tooltip(
                         button(bqn386!(glyph))
-                            .style(BtnStyle::theme())
+                            .style(btnstyle)
                             .on_press(Message::ToolbarClick(glyph.to_string())),
                         glyph_to_documentation(*glyph),
                         tooltip::Position::FollowCursor,
                     )
-                    .font(Font::with_name("BQN386 Unicode"))
-                    .style(TooltipStyle::theme()),
+                    .style(toolbarstyle),
                 )
             })
-            .spacing(1),
+            .spacing(1.0),
     )
     .into()
 }

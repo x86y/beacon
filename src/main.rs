@@ -3,19 +3,16 @@
 use iced::widget::pane_grid::{self, PaneGrid};
 use iced::widget::responsive;
 use iced::{
-    event::{self, Event},
     keyboard::{self, Modifiers},
-    subscription,
     widget::{column, container, scrollable, text},
-    window, Application, Command, Element, Length, Settings, Subscription, Theme,
+    Element, Length, Subscription, Task as Command, Theme,
 };
 use iced_runtime::font::load;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::time::Instant;
-use styles::CanvasStyle;
+use styles::canvasstyle;
 use views::tabs::tab_view;
-// use tracing::{event as e, info, instrument, Level};
 
 mod docs;
 mod save;
@@ -37,13 +34,11 @@ static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
 
 pub fn main() -> iced::Result {
     // tracing_subscriber::fmt::init();
-    Beacon::run(Settings {
-        window: window::Settings {
-            size: (430, 800),
-            ..window::Settings::default()
-        },
-        ..Settings::default()
-    })
+    iced::application(Beacon::title, Beacon::update, Beacon::view)
+        .subscription(Beacon::subscription)
+        .font(include_bytes!("../assets/BQN386.ttf").as_slice())
+        .window_size((500.0, 800.0))
+        .run_with(Beacon::new)
 }
 
 enum Beacon {
@@ -117,13 +112,8 @@ pub enum Message {
     CloseFocused,
 }
 
-impl Application for Beacon {
-    type Message = Message;
-    type Theme = Theme;
-    type Executor = iced::executor::Default;
-    type Flags = ();
-
-    fn new(_flags: ()) -> (Beacon, Command<Message>) {
+impl Beacon {
+    fn new() -> (Beacon, Command<Message>) {
         // let _ = REPL.call1(&libs.to_string().into());
         #[cfg(feature = "k")]
         ngnk::kinit();
@@ -135,7 +125,7 @@ impl Application for Beacon {
             ]),
         )
     }
-    fn theme(&self) -> Self::Theme {
+    fn theme(&self) -> Theme {
         Theme::Dark
     }
 
@@ -187,7 +177,7 @@ impl Application for Beacon {
                     Message::Split(axis, pane) => {
                         let result = state
                             .panes
-                            .split(axis, &pane, Pane::new(state.panes_created));
+                            .split(axis, pane, Pane::new(state.panes_created));
 
                         if let Some((pane, _)) = result {
                             state.focus = Some(pane);
@@ -201,7 +191,7 @@ impl Application for Beacon {
                             let result =
                                 state
                                     .panes
-                                    .split(axis, &pane, Pane::new(state.panes_created));
+                                    .split(axis, pane, Pane::new(state.panes_created));
 
                             if let Some((pane, _)) = result {
                                 state.focus = Some(pane);
@@ -213,7 +203,7 @@ impl Application for Beacon {
                     }
                     Message::FocusAdjacent(direction) => {
                         if let Some(pane) = state.focus {
-                            if let Some(adjacent) = state.panes.adjacent(&pane, direction) {
+                            if let Some(adjacent) = state.panes.adjacent(pane, direction) {
                                 state.focus = Some(adjacent);
                             }
                         }
@@ -224,22 +214,22 @@ impl Application for Beacon {
                         Command::none()
                     }
                     Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
-                        state.panes.resize(&split, ratio);
+                        state.panes.resize(split, ratio);
                         Command::none()
                     }
                     Message::Dragged(pane_grid::DragEvent::Dropped { pane, target }) => {
-                        state.panes.drop(&pane, target);
+                        state.panes.drop(pane, target);
                         Command::none()
                     }
                     Message::Dragged(_) => Command::none(),
                     Message::TogglePin(pane) => {
-                        if let Some(Pane { is_pinned, .. }) = state.panes.get_mut(&pane) {
+                        if let Some(Pane { is_pinned, .. }) = state.panes.get_mut(pane) {
                             *is_pinned = !*is_pinned;
                         }
                         Command::none()
                     }
                     Message::Maximize(pane) => {
-                        state.panes.maximize(&pane);
+                        state.panes.maximize(pane);
 
                         Command::none()
                     }
@@ -248,16 +238,16 @@ impl Application for Beacon {
                         Command::none()
                     }
                     Message::Close(pane) => {
-                        if let Some((_, sibling)) = state.panes.close(&pane) {
+                        if let Some((_, sibling)) = state.panes.close(pane) {
                             state.focus = Some(sibling);
                         }
                         Command::none()
                     }
                     Message::CloseFocused => {
                         if let Some(pane) = state.focus {
-                            if let Some(Pane { is_pinned, .. }) = state.panes.get(&pane) {
+                            if let Some(Pane { is_pinned, .. }) = state.panes.get(pane) {
                                 if !is_pinned {
-                                    if let Some((_, sibling)) = state.panes.close(&pane) {
+                                    if let Some((_, sibling)) = state.panes.close(pane) {
                                         state.focus = Some(sibling);
                                     }
                                 }
@@ -446,11 +436,11 @@ impl Application for Beacon {
                         )
                         .into()
                     }))
-                                .style(if is_focused {
-                style::pane_focused
-            } else {
-                style::pane_active
-            })
+                    .style(if is_focused {
+                        style::pane_focused
+                    } else {
+                        style::pane_active
+                    })
                 })
                 .width(Length::Fill)
                 .height(Length::Fill)
@@ -462,68 +452,66 @@ impl Application for Beacon {
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .padding(10)
-                    .style(CanvasStyle::theme())
+                    .style(canvasstyle)
                     .into()
             }
         }
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        macro_rules! kp {
-            ($kc:pat, $modif:pat) => {
-                (
-                    Event::Keyboard(keyboard::Event::KeyPressed {
-                        key_code: $kc,
-                        modifiers: $modif,
-                    }),
-                    event::Status::Ignored,
-                )
-            };
-        }
-        subscription::events_with(|event, status| match (event, status) {
-            kp!(keyboard::KeyCode::T, Modifiers::CTRL) => Some(Message::TabCreate),
-            kp!(keyboard::KeyCode::Q, Modifiers::CTRL) => Some(Message::TabClose),
-            kp!(keyboard::KeyCode::N, Modifiers::CTRL) => Some(Message::TabNext),
-            kp!(keyboard::KeyCode::P, Modifiers::CTRL) => Some(Message::TabPrev),
-            kp!(keyboard::KeyCode::L, Modifiers::CTRL) => Some(Message::BufferClear),
-            (Event::Keyboard(keyboard::Event::CharacterReceived(_)), event::Status::Ignored) => {
-                Some(Message::InputFocus)
+        keyboard::on_key_press(|key, modifiers| {
+            if !modifiers.command() {
+                return None;
             }
-            _ => None,
+
+            match (key.as_ref(), modifiers) {
+                (keyboard::Key::Character("T"), Modifiers::CTRL) => Some(Message::TabCreate),
+                (keyboard::Key::Character("Q"), Modifiers::CTRL) => Some(Message::TabClose),
+                (keyboard::Key::Character("N"), Modifiers::CTRL) => Some(Message::TabNext),
+                (keyboard::Key::Character("P"), Modifiers::CTRL) => Some(Message::TabPrev),
+                (keyboard::Key::Character("L"), Modifiers::CTRL) => Some(Message::BufferClear),
+                _ => None,
+            }
         })
     }
 }
 
 mod style {
     use iced::widget::container;
-    use iced::Theme;
     use iced::Background;
     use iced::Color;
+    use iced::Theme;
 
-    pub fn pane_active(theme: &Theme) -> container::Appearance {
+    pub fn pane_active(theme: &Theme) -> container::Style {
         let palette = theme.extended_palette();
-        container::Appearance {
+        container::Style {
             background: Some(Background::Color(Color::from_rgb(
                 12.0 / 255.0,
                 12.0 / 255.0,
                 12.0 / 255.0,
             ))),
-            border_width: 2.0,
-            border_color: palette.background.strong.color,
+            border: iced::Border {
+                width: 0.0,
+                color: palette.background.strong.color,
+                radius: 0.0.into(),
+            },
             ..Default::default()
         }
     }
 
-    pub fn pane_focused(theme: &Theme) -> container::Appearance {
+    pub fn pane_focused(theme: &Theme) -> container::Style {
         let palette = theme.extended_palette();
-        container::Appearance {
+        container::Style {
             background: Some(Background::Color(Color::from_rgb(
                 12.0 / 255.0,
                 12.0 / 255.0,
                 12.0 / 255.0,
             ))),
-            border_width: 2.0,
-            border_color: palette.primary.strong.color,
+            border: iced::Border {
+                width: 0.0,
+                color: palette.primary.strong.color,
+                radius: 0.0.into(),
+            },
             ..Default::default()
         }
     }

@@ -13,10 +13,9 @@ directories-next = "2.0"
 cbqn = { version = "0.1.0", default-features=false, optional = true }
 phf = "0.11.1"
 unicode-segmentation = "1.10.1"
-iced = { git = "https://github.com/iced-rs/iced", features = ["async-std", "debug", "lazy", "svg"], rev = "fd077918db7643530c3a7318ed5777d2f3d8761b" }
-iced_core = { git = "https://github.com/iced-rs/iced", rev = "fd077918db7643530c3a7318ed5777d2f3d8761b" }
-iced_runtime = { git = "https://github.com/iced-rs/iced", rev = "fd077918db7643530c3a7318ed5777d2f3d8761b" }
-iced_style = { git = "https://github.com/iced-rs/iced", rev = "fd077918db7643530c3a7318ed5777d2f3d8761b" }
+iced = { git = "https://github.com/iced-rs/iced", features = ["async-std", "debug", "lazy", "svg", "advanced"], rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
+iced_core = { git = "https://github.com/iced-rs/iced", rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
+iced_runtime = { git = "https://github.com/iced-rs/iced", rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
 # itertools = "0.11.0"
 # tracing = "0.1.37"
 # tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }

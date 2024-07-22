@@ -119,9 +119,9 @@ impl<'a> Editor<'a> {
 
         if locked && character != '\\' {
             self.value
-                .insert(self.cursor.end(self.value), KS[&character]);
+                .insert(self.cursor.end(self.value), KS[&character])
         } else {
-            self.value.insert(self.cursor.end(self.value), character);
+            self.value.insert(self.cursor.end(self.value), character)
         }
         self.cursor.move_right(self.value);
     }
