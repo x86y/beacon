@@ -1,8 +1,7 @@
 use iced::{
-    widget::{button, container, markdown, text, tooltip},
-    Element,
+    widget::{button, container, markdown, text, text::LineHeight, tooltip},
+    Element, Font,
 };
-use iced_core::{text::LineHeight, Font};
 use once_cell::sync::Lazy;
 
 use crate::{
