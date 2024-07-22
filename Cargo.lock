@@ -467,7 +467,6 @@ dependencies = [
  "cbqn",
  "directories-next",
  "iced",
- "iced_core",
  "iced_runtime",
  "ngnk",
  "once_cell",
@@ -2333,7 +2332,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "iced_core",
  "iced_futures",
@@ -2347,7 +2346,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "bitflags 2.6.0",
  "bytes",
@@ -2366,7 +2365,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "async-std",
  "futures",
@@ -2380,7 +2379,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "bitflags 2.6.0",
  "bytemuck",
@@ -2399,7 +2398,7 @@ dependencies = [
 [[package]]
 name = "iced_highlighter"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -2409,7 +2408,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2421,7 +2420,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "bytes",
  "iced_core",
@@ -2433,7 +2432,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2449,7 +2448,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "bitflags 2.6.0",
  "bytemuck",
@@ -2469,7 +2468,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "iced_highlighter",
  "iced_renderer",
@@ -2487,7 +2486,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.13.0-dev"
-source = "git+https://github.com/iced-rs/iced?rev=dcdf1307006883f50083c186ca7b8656bfa60873#dcdf1307006883f50083c186ca7b8656bfa60873"
+source = "git+https://github.com/iced-rs/iced?branch=master#dcdf1307006883f50083c186ca7b8656bfa60873"
 dependencies = [
  "iced_futures",
  "iced_graphics",
