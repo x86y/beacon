@@ -12,10 +12,10 @@ pub fn truncate(s: &str, max_chars: usize) -> &str {
 pub mod macros {
     macro_rules! bqn386 {
         ($q:expr) => {
-            text($q)
+            iced::widget::text($q)
                 .font(Font::with_name("BQN386 Unicode"))
                 .size(14)
-                .line_height(LineHeight::Absolute(12.into()))
+                .line_height(iced::widget::text::LineHeight::Absolute(12.into()))
         };
     }
     pub(crate) use bqn386;

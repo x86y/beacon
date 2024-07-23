@@ -9,9 +9,7 @@ use iced::alignment::Alignment;
 use iced::widget::{pane_grid, svg};
 use iced::{
     color,
-    widget::{
-        button, column, container, row, scrollable, text, text::LineHeight, Column, Container,
-    },
+    widget::{button, column, container, row, scrollable, Column, Container},
     Element, Font, Length,
 };
 
@@ -42,7 +40,7 @@ pub fn view_pane<'a>(
 ) -> Element<'a, Message> {
     let inp = text_input::TextInput::new(
         "",
-        &input_value
+        input_value
             .get(&unsafe { std::mem::transmute::<_, usize>(pane) })
             .unwrap_or(&String::new()),
     )
@@ -133,8 +131,7 @@ pub fn view_pane<'a>(
             Message::Split(pane_grid::Axis::Horizontal, pane),
         ),
         button("vertical", Message::Split(pane_grid::Axis::Vertical, pane),)
-    ]
-    .spacing(5);
+    ];
     if total_panes > 1 && !is_pinned {
         controls = controls.push(button("cross", Message::Close(pane)));
     }
@@ -146,13 +143,8 @@ pub fn view_pane<'a>(
             .id(SCROLL_ID.clone()),
         inp
     ]
-    .width(Length::Fill)
     .spacing(10)
     .align_x(Alignment::Center);
 
-    container(content)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .padding(5)
-        .into()
+    container(content).height(Length::Fill).padding(5).into()
 }

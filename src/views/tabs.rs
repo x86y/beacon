@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, row, text, text::LineHeight, Container},
+    widget::{button, row, Container},
     Element, Font,
 };
 
@@ -16,7 +16,7 @@ pub fn tab_view<'a>(outs: &HistoryMap, at: usize) -> Element<'a, Message> {
             .map(|i| {
                 Container::new(
                     button(if *i == at {
-                        bqn386!(format!("{i}"))
+                        bqn386!(format!("[{i}]"))
                     } else {
                         bqn386!(format!("{i}"))
                     })
@@ -26,6 +26,15 @@ pub fn tab_view<'a>(outs: &HistoryMap, at: usize) -> Element<'a, Message> {
                                 56.0 / 255.0,
                                 56.0 / 255.0,
                                 56.0 / 255.0,
+                            ))),
+                            text_color: iced::Color::WHITE,
+                            ..Default::default()
+                        },
+                        button::Status::Pressed => button::Style {
+                            background: Some(iced::Background::Color(iced::Color::from_rgb(
+                                12.0 / 255.0,
+                                12.0 / 255.0,
+                                12.0 / 255.0,
                             ))),
                             text_color: iced::Color::WHITE,
                             ..Default::default()
