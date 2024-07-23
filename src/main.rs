@@ -27,7 +27,7 @@ use crate::widgets::text_input;
 use utils::keval;
 use utils::{truncate, HistoryMap, REPL};
 use views::pane::{view_pane, Pane};
-use views::toolbar::toolbar_view;
+use views::toolbar::Toolbar;
 
 pub static INPUT_ID: Lazy<text_input::Id> = Lazy::new(text_input::Id::unique);
 static SCROLL_ID: Lazy<scrollable::Id> = Lazy::new(scrollable::Id::unique);
@@ -55,6 +55,7 @@ struct State {
     panes: pane_grid::State<Pane>,
     panes_created: usize,
     focus: Option<pane_grid::Pane>,
+    glyphbar: Toolbar,
 }
 
 impl Default for State {
@@ -69,6 +70,7 @@ impl Default for State {
             panes,
             panes_created: 1,
             focus: None,
+            glyphbar: Toolbar::new(),
         }
     }
 }
@@ -411,15 +413,15 @@ impl Beacon {
                     tab_at: at,
                     focus,
                     panes,
+                    glyphbar,
                     ..
                 },
             ) => {
-                let glyphbar = toolbar_view();
                 let tabs = tab_view(outs, *at);
 
                 let focus = focus;
                 let total_panes = panes.len();
-                let pane_grid = PaneGrid::new(&panes, |id, pane, is_maximized| {
+                let pane_grid = PaneGrid::new(panes, |id, pane, is_maximized| {
                     let is_focused = *focus == Some(id);
                     let pane_outs = outs
                         .0
@@ -430,11 +432,10 @@ impl Beacon {
                             id,
                             total_panes,
                             pane.is_pinned,
-                            &input_value,
+                            input_value,
                             pane_outs,
                             *at,
                         )
-                        .into()
                     }))
                     .style(if is_focused {
                         style::pane_focused
@@ -448,7 +449,7 @@ impl Beacon {
                 .on_click(Message::Clicked)
                 .on_drag(Message::Dragged)
                 .on_resize(10, Message::Resized);
-                container(column![glyphbar, tabs, pane_grid])
+                container(column![glyphbar.view(), tabs, pane_grid])
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .padding(10)

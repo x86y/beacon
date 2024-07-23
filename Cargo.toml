@@ -21,8 +21,8 @@ iced = { git = "https://github.com/iced-rs/iced", features = [
     "advanced",
     "markdown",
     "highlighter",
-], branch = "master" }
-iced_runtime = { git = "https://github.com/iced-rs/iced", branch = "master" }
+], rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
+iced_runtime = { git = "https://github.com/iced-rs/iced", rev = "dcdf1307006883f50083c186ca7b8656bfa60873" }
 ngnk = { version = "0.2.3", optional = true }
 
 
