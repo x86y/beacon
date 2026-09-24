@@ -29,6 +29,15 @@ $ cd beacon
 $ nix run   # Alternatively: nix develop -c cargo run --release
 ```
 
+## macOS (M2 / Apple Silicon) instructions
+
+On macOS M2, point to the directory containing the CBQN library when building and running:
+
+```sh
+> export DYLD_FALLBACK_LIBRARY_PATH=/Users/ludo/Downloads/github/CBQN
+> RUSTFLAGS='-L /Users/ludo/Downloads/github/CBQN' cargo run --release
+```
+
 ## Windows instructions
 ```sh
 > git clone https://github.com/x86y/beacon
